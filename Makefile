@@ -25,8 +25,10 @@ install-tools:
 
 # Generate Go code from SQL
 .PHONY: sqlc
-sqlc:
-	sqlc generate
+sqlc-books:
+	sqlc generate -f internal/books/infrastructure/persistence/sqlc.yml
+
+sqlc-all: sqlc-books
 
 # Run goose migrations
 .PHONY: migrate
