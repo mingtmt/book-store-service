@@ -12,7 +12,7 @@ import (
 var DB *pgxpool.Pool
 
 func InitPostgres() {
-	dsn := os.Getenv("DATABASE_URL")
+	dsn := os.Getenv("DB_URL")
 
 	config, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
