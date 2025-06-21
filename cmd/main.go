@@ -31,6 +31,8 @@ func main() {
 	r := gin.Default()
 
 	// Register middleware
+	r.Use(gin.Recovery())
+	r.Use(middleware.RequestID())
 	r.Use(middleware.ErrorHandler())
 
 	// Register routes
