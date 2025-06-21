@@ -1,19 +1,21 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/mingtmt/book-store/internal/initialize"
 	"github.com/mingtmt/book-store/internal/middleware"
+	"github.com/mingtmt/book-store/pkg/logger"
 )
 
 func main() {
+	logger.InitLogger()
 	// Load environment variables from .env file
 	if err := godotenv.Load(); err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+		logger.Error("Error loading .env file", err, nil)
+		os.Exit(1)
 	}
 
 	// Get port from environment or use default
@@ -36,8 +38,9 @@ func main() {
 		c.String(200, "Hello World")
 	})
 
-	log.Printf("🚀 Server running at http://localhost:%s", port)
+	logger.Info("🚀 Server running", map[string]interface{}{"url": "http://localhost:" + port})
 	if err := r.Run(":" + port); err != nil {
-		log.Fatalf("Failed to run server: %v", err)
+		logger.Error("Failed to run server", err, nil)
+		os.Exit(1)
 	}
 }
