@@ -10,7 +10,7 @@ import (
 
 var DB *pgxpool.Pool
 
-func InitPostgres() {
+func InitPostgres() (*pgxpool.Pool, error) {
 	dsn := os.Getenv("DB_URL")
 
 	config, err := pgxpool.ParseConfig(dsn)
@@ -32,4 +32,5 @@ func InitPostgres() {
 
 	DB = pool
 	logger.Info("Postgres connection established successfully", nil)
+	return DB, nil
 }
