@@ -21,7 +21,7 @@ help:
 .PHONY: install-tools
 install-tools:
 	go install github.com/pressly/goose/v3/cmd/goose@latest
-	go install github.com/sqlc-dev /sqlc/cmd/sqlc@latest
+	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 
 # Generate Go code from SQL
 .PHONY: sqlc
@@ -33,17 +33,17 @@ sqlc-all: sqlc-books
 # Run goose migrations
 .PHONY: migrate
 migrate:
-	goose -dir database/migrations postgres "$(DB_URL)" up
+	goose -dir migrations postgres "$(DB_URL)" up
 
 # Rollback last migration
 .PHONY: migrate-down
 migrate-down:
-	goose -dir database/migrations postgres "$(DB_URL)" down
+	goose -dir migrations postgres "$(DB_URL)" down
 
 # Drop all tables and re-run migrations (⚠️ destructive)
 .PHONY: reset
 reset:
-	goose -dir database/migrations postgres "$(DB_URL)" reset
+	goose -dir migrations postgres "$(DB_URL)" reset
 
 # Full setup
 .PHONY: setup

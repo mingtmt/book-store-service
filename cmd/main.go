@@ -5,6 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/mingtmt/book-store/internal/books/application"
+	"github.com/mingtmt/book-store/internal/books/controller"
+	"github.com/mingtmt/book-store/internal/books/infrastructure/persistence"
 	"github.com/mingtmt/book-store/internal/initialize"
 	"github.com/mingtmt/book-store/internal/middleware"
 	"github.com/mingtmt/book-store/pkg/logger"
@@ -25,7 +28,11 @@ func main() {
 	}
 
 	// Initialize database connection
-	initialize.InitPostgres()
+	dbPool, err := initialize.InitPostgres()
+	if err != nil {
+		logger.Error("failed to connect to database:", err, nil)
+	}
+	defer dbPool.Close()
 
 	// Set up Gin router
 	r := gin.Default()
@@ -39,6 +46,13 @@ func main() {
 	r.GET("/", func(c *gin.Context) {
 		c.String(200, "Hello World")
 	})
+
+	bookRepo := persistence.NewBookRepository(dbPool)
+	bookService := application.NewBookService(bookRepo)
+	bookHandler := controller.NewBookHandler(bookService)
+
+	bookGroup := r.Group("v1/api/books")
+	controller.RegisterBookRoutes(bookGroup, bookHandler)
 
 	logger.Info("🚀 Server running", map[string]interface{}{"url": "http://localhost:" + port})
 	if err := r.Run(":" + port); err != nil {

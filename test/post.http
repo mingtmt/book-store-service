@@ -1,0 +1,10 @@
+@url_dev =  http://localhost:8080/v1/api
+
+### create a new book
+POST {{url_dev}}/books/
+
+{
+  "title": "Clean Architecture",
+  "author": "Robert C. Martin",
+  "price": "39.99"
+}
