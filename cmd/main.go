@@ -5,9 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/mingtmt/book-store/internal/books/application"
 	"github.com/mingtmt/book-store/internal/books/controller"
-	"github.com/mingtmt/book-store/internal/books/infrastructure/persistence"
 	"github.com/mingtmt/book-store/internal/initialize"
 	"github.com/mingtmt/book-store/internal/middleware"
 	"github.com/mingtmt/book-store/pkg/logger"
@@ -42,17 +40,11 @@ func main() {
 	r.Use(middleware.RequestID())
 	r.Use(middleware.ErrorHandler())
 
-	// Register routes
-	r.GET("/", func(c *gin.Context) {
-		c.String(200, "Hello World")
-	})
-
-	bookRepo := persistence.NewBookRepository(dbPool)
-	bookService := application.NewBookService(bookRepo)
-	bookHandler := controller.NewBookHandler(bookService)
+	// Initialize DI container
+	container := initialize.NewContainer(dbPool)
 
 	bookGroup := r.Group("v1/api/books")
-	controller.RegisterBookRoutes(bookGroup, bookHandler)
+	controller.RegisterBookRoutes(bookGroup, container.BookHandler)
 
 	logger.Info("🚀 Server running", map[string]interface{}{"url": "http://localhost:" + port})
 	if err := r.Run(":" + port); err != nil {

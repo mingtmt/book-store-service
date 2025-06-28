@@ -4,7 +4,7 @@
 POST {{url_dev}}/books/
 
 {
-  "title": "Clean Architecture",
+  "title": "Clean Architecture 2",
   "author": "Robert C. Martin",
-  "price": "39.99"
+  "price": "29.99"
 }
