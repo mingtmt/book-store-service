@@ -21,7 +21,7 @@ func NewBookRepository(pool *pgxpool.Pool) *BookRepository {
 	}
 }
 
-func (r *BookRepository) Create(ctx context.Context, book domain.Book) (*domain.Book, error) {
+func (r *BookRepository) CreateBook(ctx context.Context, book domain.Book) (*domain.Book, error) {
 	var price pgtype.Numeric
 	if err := price.Scan(book.Price); err != nil {
 		logger.Error("failed to convert price", err, map[string]interface{}{
@@ -62,7 +62,7 @@ func (r *BookRepository) Create(ctx context.Context, book domain.Book) (*domain.
 	}, nil
 }
 
-func (r *BookRepository) GetByID(ctx context.Context, id string) (*domain.Book, error) {
+func (r *BookRepository) GetBookByID(ctx context.Context, id string) (*domain.Book, error) {
 	parsedUUID, err := uuid.Parse(id)
 	if err != nil {
 		return nil, err
@@ -85,7 +85,7 @@ func (r *BookRepository) GetByID(ctx context.Context, id string) (*domain.Book, 
 	}, nil
 }
 
-func (r *BookRepository) GetAll(ctx context.Context) ([]domain.Book, error) {
+func (r *BookRepository) GetAllBooks(ctx context.Context) ([]domain.Book, error) {
 	rows, err := r.db.ListBooks(ctx)
 	if err != nil {
 		return nil, err
@@ -151,4 +151,29 @@ func (r *BookRepository) UpdateBook(ctx context.Context, book domain.Book) (*dom
 		Price:     updated.Price.Int.String(),
 		CreatedAt: updated.CreatedAt.Time,
 	}, nil
+}
+
+func (r *BookRepository) DeleteBookByID(ctx context.Context, id string) error {
+	parsedUUID, err := uuid.Parse(id)
+	if err != nil {
+		return err
+	}
+
+	bookID := pgtype.UUID{
+		Bytes: parsedUUID,
+		Valid: true,
+	}
+
+	err = r.db.DeleteBook(ctx, bookID)
+	if err != nil {
+		logger.Error("failed to delete book from database", err, map[string]interface{}{
+			"book_id": id,
+		})
+		return err
+	}
+
+	logger.Info("book deleted successfully", map[string]interface{}{
+		"book_id": id,
+	})
+	return nil
 }

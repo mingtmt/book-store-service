@@ -45,7 +45,7 @@ func (h *BookHandler) CreateBook(c *gin.Context) {
 
 func (h *BookHandler) GetBook(c *gin.Context) {
 	id := c.Param("id")
-	book, err := h.service.GetByID(c, id)
+	book, err := h.service.GetBookByID(c, id)
 	if err != nil {
 		c.Error(err)
 		return
@@ -60,7 +60,7 @@ func (h *BookHandler) GetBook(c *gin.Context) {
 }
 
 func (h *BookHandler) GetAllBooks(c *gin.Context) {
-	books, err := h.service.GetAll(c)
+	books, err := h.service.GetAllBooks(c)
 	if err != nil {
 		c.Error(err)
 		return
@@ -99,4 +99,19 @@ func (h *BookHandler) UpdateBook(c *gin.Context) {
 	})
 
 	c.JSON(http.StatusOK, book)
+}
+
+func (h *BookHandler) DeleteBook(c *gin.Context) {
+	id := c.Param("id")
+	if err := h.service.DeleteBookByID(c.Request.Context(), id); err != nil {
+		c.Error(err)
+		return
+	}
+
+	requestID := c.GetString(middleware.RequestIDKey)
+	logger.InfoWithRequestID("book deleted", requestID, map[string]interface{}{
+		"book_id": id,
+	})
+
+	c.Status(http.StatusNoContent)
 }
