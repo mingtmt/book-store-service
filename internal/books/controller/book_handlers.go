@@ -25,18 +25,13 @@ func (h *BookHandler) CreateBook(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		// Debug: log the raw request body for troubleshooting
-		body, _ := c.GetRawData()
-		logger.Error("failed to bind JSON", err, map[string]interface{}{
-			"raw_body": string(body),
-		})
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid input, make sure price is a string (e.g., \"39.99\")"})
+		c.Error(err)
 		return
 	}
 
 	book, err := h.service.CreateBook(c.Request.Context(), req.Title, req.Author, req.Price)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
 
@@ -45,5 +40,36 @@ func (h *BookHandler) CreateBook(c *gin.Context) {
 		"book_id": book.ID,
 	})
 
-	c.JSON(http.StatusCreated, book)
+	c.Status(http.StatusCreated)
+}
+
+func (h *BookHandler) GetBook(c *gin.Context) {
+	id := c.Param("id")
+	book, err := h.service.GetByID(c, id)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	requestID := c.GetString(middleware.RequestIDKey)
+	logger.InfoWithRequestID("book fetched", requestID, map[string]interface{}{
+		"book_id": book.ID,
+	})
+
+	c.JSON(http.StatusOK, book)
+}
+
+func (h *BookHandler) GetAllBooks(c *gin.Context) {
+	books, err := h.service.GetAll(c)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	requestID := c.GetString(middleware.RequestIDKey)
+	logger.InfoWithRequestID("all books fetched", requestID, map[string]interface{}{
+		"total": len(books),
+	})
+
+	c.JSON(http.StatusOK, books)
 }

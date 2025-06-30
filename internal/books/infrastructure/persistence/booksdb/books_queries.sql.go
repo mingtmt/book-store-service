@@ -42,6 +42,17 @@ func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) (Book, e
 	return i, err
 }
 
+const deleteBook = `-- name: DeleteBook :exec
+DELETE 
+FROM books 
+WHERE id = $1
+`
+
+func (q *Queries) DeleteBook(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deleteBook, id)
+	return err
+}
+
 const getBook = `-- name: GetBook :one
 SELECT id, title, author, price, created_at
 FROM books
@@ -91,4 +102,36 @@ func (q *Queries) ListBooks(ctx context.Context) ([]Book, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateBook = `-- name: UpdateBook :one
+UPDATE books
+SET title = $2, author = $3, price = $4
+WHERE id = $1
+RETURNING id, title, author, price, created_at
+`
+
+type UpdateBookParams struct {
+	ID     pgtype.UUID
+	Title  string
+	Author string
+	Price  pgtype.Numeric
+}
+
+func (q *Queries) UpdateBook(ctx context.Context, arg UpdateBookParams) (Book, error) {
+	row := q.db.QueryRow(ctx, updateBook,
+		arg.ID,
+		arg.Title,
+		arg.Author,
+		arg.Price,
+	)
+	var i Book
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Author,
+		&i.Price,
+		&i.CreatedAt,
+	)
+	return i, err
 }

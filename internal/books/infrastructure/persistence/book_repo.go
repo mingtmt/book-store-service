@@ -45,18 +45,12 @@ func (r *BookRepository) Create(ctx context.Context, book domain.Book) (*domain.
 	if err != nil {
 		logger.Error("failed to create book in database", err, map[string]interface{}{
 			"book_id": book.ID,
-			"title":   book.Title,
-			"author":  book.Author,
-			"price":   book.Price,
 		})
 		return nil, err
 	}
 
 	logger.Info("book created successfully", map[string]interface{}{
 		"book_id": created.ID.String(),
-		"title":   created.Title,
-		"author":  created.Author,
-		"price":   created.Price,
 	})
 
 	return &domain.Book{
@@ -66,4 +60,58 @@ func (r *BookRepository) Create(ctx context.Context, book domain.Book) (*domain.
 		Price:     book.Price,
 		CreatedAt: created.CreatedAt.Time,
 	}, nil
+}
+
+func (r *BookRepository) GetByID(ctx context.Context, id string) (*domain.Book, error) {
+	parsedUUID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, err
+	}
+	bookID := pgtype.UUID{
+		Bytes: parsedUUID,
+		Valid: true,
+	}
+	b, err := r.db.GetBook(ctx, bookID)
+	if err != nil {
+		return nil, err
+	}
+	priceStr := ""
+	if b.Price.Valid {
+		priceStr = b.Price.Int.String()
+	}
+	return &domain.Book{
+		ID:        b.ID.String(),
+		Title:     b.Title,
+		Author:    b.Author,
+		Price:     priceStr,
+		CreatedAt: b.CreatedAt.Time,
+	}, nil
+}
+
+func (r *BookRepository) GetAll(ctx context.Context) ([]domain.Book, error) {
+	rows, err := r.db.ListBooks(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var books []domain.Book
+	for _, row := range rows {
+		priceStr := ""
+		if row.Price.Valid {
+			priceStr = row.Price.Int.String()
+		}
+		books = append(books, domain.Book{
+			ID:        row.ID.String(),
+			Title:     row.Title,
+			Author:    row.Author,
+			Price:     priceStr,
+			CreatedAt: row.CreatedAt.Time,
+		})
+	}
+	return books, nil
+}
+
+func (r *BookRepository) UpdateBook(ctx context.Context, book domain.Book) (*domain.Book, error) {
+	// This method is not implemented in the original code snippet.
+	// If you need to implement it, you can follow a similar pattern as Create and GetByID.
+	return nil, nil
 }
