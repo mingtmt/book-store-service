@@ -57,7 +57,7 @@ func (r *BookRepository) Create(ctx context.Context, book domain.Book) (*domain.
 		ID:        created.ID.String(),
 		Title:     created.Title,
 		Author:    created.Author,
-		Price:     book.Price,
+		Price:     created.Price.Int.String(),
 		CreatedAt: created.CreatedAt.Time,
 	}, nil
 }
@@ -71,20 +71,17 @@ func (r *BookRepository) GetByID(ctx context.Context, id string) (*domain.Book, 
 		Bytes: parsedUUID,
 		Valid: true,
 	}
-	b, err := r.db.GetBook(ctx, bookID)
+	book, err := r.db.GetBook(ctx, bookID)
 	if err != nil {
 		return nil, err
 	}
-	priceStr := ""
-	if b.Price.Valid {
-		priceStr = b.Price.Int.String()
-	}
+
 	return &domain.Book{
-		ID:        b.ID.String(),
-		Title:     b.Title,
-		Author:    b.Author,
-		Price:     priceStr,
-		CreatedAt: b.CreatedAt.Time,
+		ID:        book.ID.String(),
+		Title:     book.Title,
+		Author:    book.Author,
+		Price:     book.Price.Int.String(),
+		CreatedAt: book.CreatedAt.Time,
 	}, nil
 }
 
@@ -111,7 +108,47 @@ func (r *BookRepository) GetAll(ctx context.Context) ([]domain.Book, error) {
 }
 
 func (r *BookRepository) UpdateBook(ctx context.Context, book domain.Book) (*domain.Book, error) {
-	// This method is not implemented in the original code snippet.
-	// If you need to implement it, you can follow a similar pattern as Create and GetByID.
-	return nil, nil
+	parsedUUID, err := uuid.Parse(book.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	bookID := pgtype.UUID{
+		Bytes: parsedUUID,
+		Valid: true,
+	}
+
+	var price pgtype.Numeric
+	if err := price.Scan(book.Price); err != nil {
+		logger.Error("failed to convert price", err, map[string]interface{}{
+			"book_id": book.ID,
+			"price":   book.Price,
+		})
+		return nil, err
+	}
+
+	updated, err := r.db.UpdateBook(ctx, booksdb.UpdateBookParams{
+		ID:     bookID,
+		Title:  book.Title,
+		Author: book.Author,
+		Price:  price,
+	})
+	if err != nil {
+		logger.Error("failed to update book in database", err, map[string]interface{}{
+			"book_id": book.ID,
+		})
+		return nil, err
+	}
+
+	logger.Info("book updated successfully", map[string]interface{}{
+		"book_id": updated.ID.String(),
+	})
+
+	return &domain.Book{
+		ID:        updated.ID.String(),
+		Title:     updated.Title,
+		Author:    updated.Author,
+		Price:     updated.Price.Int.String(),
+		CreatedAt: updated.CreatedAt.Time,
+	}, nil
 }

@@ -73,3 +73,30 @@ func (h *BookHandler) GetAllBooks(c *gin.Context) {
 
 	c.JSON(http.StatusOK, books)
 }
+
+func (h *BookHandler) UpdateBook(c *gin.Context) {
+	id := c.Param("id")
+	var req struct {
+		Title  string `json:"title"`
+		Author string `json:"author"`
+		Price  string `json:"price"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Error(err)
+		return
+	}
+
+	book, err := h.service.UpdateBook(c.Request.Context(), id, req.Title, req.Author, req.Price)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	requestID := c.GetString(middleware.RequestIDKey)
+	logger.InfoWithRequestID("book updated", requestID, map[string]interface{}{
+		"book_id": book.ID,
+	})
+
+	c.JSON(http.StatusOK, book)
+}

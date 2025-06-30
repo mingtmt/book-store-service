@@ -11,6 +11,7 @@ type BookRepository interface {
 	Create(ctx context.Context, book domain.Book) (*domain.Book, error)
 	GetByID(ctx context.Context, id string) (*domain.Book, error)
 	GetAll(ctx context.Context) ([]domain.Book, error)
+	UpdateBook(ctx context.Context, book domain.Book) (*domain.Book, error)
 }
 
 type BookService struct {
@@ -37,4 +38,14 @@ func (s *BookService) GetByID(ctx context.Context, id string) (*domain.Book, err
 
 func (s *BookService) GetAll(ctx context.Context) ([]domain.Book, error) {
 	return s.repo.GetAll(ctx)
+}
+
+func (s *BookService) UpdateBook(ctx context.Context, id, title, author, price string) (*domain.Book, error) {
+	book := domain.Book{
+		ID:     id,
+		Title:  title,
+		Author: author,
+		Price:  price,
+	}
+	return s.repo.UpdateBook(ctx, book)
 }
