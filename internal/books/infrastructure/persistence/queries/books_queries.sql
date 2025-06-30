@@ -10,3 +10,12 @@ WHERE id = $1;
 SELECT *
 FROM books
 ORDER BY created_at DESC;
+-- name: UpdateBook :one
+UPDATE books
+SET title = $2, author = $3, price = $4
+WHERE id = $1
+RETURNING *;
+-- name: DeleteBook :exec
+DELETE 
+FROM books 
+WHERE id = $1;

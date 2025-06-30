@@ -8,3 +8,23 @@ POST {{url_dev}}/books/
   "author": "Robert C. Martin",
   "price": "29.99"
 }
+
+### get 1 book
+GET {{url_dev}}/books/5aa919ee-abf8-496b-b6c6-f62825319793
+
+### get all books
+GET {{url_dev}}/books/
+
+### update a book
+PUT {{url_dev}}/books/5aa919ee-abf8-496b-b6c6-f62825319793
+
+{
+  "title": "Clean Architecture 2",
+  "author": "Robert C. Martin",
+  "price": "35.99"
+}
+
+### delete a book
+DELETE {{url_dev}}/books/5aa919ee-abf8-496b-b6c6-f62825319793
+
+
