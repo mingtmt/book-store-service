@@ -11,6 +11,7 @@ DB_URL := $(DB_URL)
 help:
 	@echo "📘 Available commands:"
 	@echo "  make install-tools    - Install goose and sqlc"
+	@echo "  make run-services     - Start all services using docker-compose"
 	@echo "  make sqlc             - Generate code from SQL files"
 	@echo "  make migrate          - Run goose up migration"
 	@echo "  make migrate-down     - Rollback one migration"
@@ -22,6 +23,11 @@ help:
 install-tools:
 	go install github.com/pressly/goose/v3/cmd/goose@latest
 	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+
+# Run docker-compose to start all services
+.PHONY: run-services
+run-services:
+	docker-compose up -d
 
 # Generate Go code from SQL
 .PHONY: sqlc
