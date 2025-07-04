@@ -5,9 +5,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/mingtmt/book-store/internal/books/controller"
+	bookController "github.com/mingtmt/book-store/internal/books/controller"
 	"github.com/mingtmt/book-store/internal/initialize"
 	"github.com/mingtmt/book-store/internal/middleware"
+	userController "github.com/mingtmt/book-store/internal/users/controller"
 	"github.com/mingtmt/book-store/pkg/logger"
 )
 
@@ -44,7 +45,9 @@ func main() {
 	container := initialize.NewContainer(dbPool)
 
 	bookGroup := r.Group("v1/api/books")
-	controller.RegisterBookRoutes(bookGroup, container.BookHandler)
+	bookController.RegisterBookRoutes(bookGroup, container.BookHandler)
+	userGroup := r.Group("v1/api/users")
+	userController.RegisterUserRoutes(userGroup, container.UserHandler)
 
 	logger.Info("🚀 Server running", map[string]interface{}{"url": "http://localhost:" + port})
 	if err := r.Run(":" + port); err != nil {

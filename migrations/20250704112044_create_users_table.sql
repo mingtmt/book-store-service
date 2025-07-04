@@ -1,14 +1,13 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE books (
+CREATE TABLE users (
     id UUID PRIMARY KEY,
-    title TEXT NOT NULL,
-    author TEXT NOT NULL,
-    price NUMERIC NOT NULL,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT now()
 );
 -- +goose StatementEnd
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE books;
+DROP TABLE IF EXISTS users;
 -- +goose StatementEnd

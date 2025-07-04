@@ -33,8 +33,11 @@ run-services:
 .PHONY: sqlc
 sqlc-books:
 	sqlc generate -f internal/books/infrastructure/persistence/sqlc.yml
+	
+sqlc-users:
+	sqlc generate -f internal/users/infrastructure/persistence/sqlc.yml
 
-sqlc-all: sqlc-books
+sqlc-all: sqlc-books sqlc-users
 
 # Run goose migrations
 .PHONY: migrate
