@@ -35,4 +35,10 @@ POST {{url_dev}}/users/register
   "password": "securepassword"
 }
 
+### login a user
+POST {{url_dev}}/users/login
 
+{
+  "username": "john_doe",
+  "password": "securepassword"
+}

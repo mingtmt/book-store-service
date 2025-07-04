@@ -38,3 +38,28 @@ func (h *UserHandler) RegisterUser(c *gin.Context) {
 
 	c.Status(http.StatusCreated)
 }
+
+func (h *UserHandler) LoginUser(c *gin.Context) {
+	var req struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Error(err)
+		return
+	}
+
+	token, err := h.authService.LoginUser(c.Request.Context(), req.Username, req.Password)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	logger.Info("user logged in successfully", map[string]interface{}{
+		"username": req.Username,
+	})
+
+	c.JSON(http.StatusOK, gin.H{
+		"token": token,
+	})
+}

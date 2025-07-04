@@ -20,6 +20,10 @@ func Error(msg string, err error, fields map[string]interface{}) {
 	logFields(fields).Err(err).Msg(msg)
 }
 
+func Warn(msg string, fields map[string]interface{}) {
+	logFields(fields).Warn().Msg(msg)
+}
+
 func InfoWithRequestID(msg string, requestID string, fields map[string]interface{}) {
 	fields["request_id"] = requestID
 	Info(msg, fields)

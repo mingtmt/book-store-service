@@ -2,14 +2,17 @@ package application
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 	"github.com/mingtmt/book-store/internal/users/domain"
+	"github.com/mingtmt/book-store/internal/users/infrastructure/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserRepository interface {
 	CreateUser(ctx context.Context, user *domain.User) (*domain.User, error)
+	FindByUsername(ctx context.Context, username string) (*domain.User, error)
 }
 
 type AuthService struct {
@@ -33,4 +36,17 @@ func (s *AuthService) RegisterUser(ctx context.Context, username, password strin
 	}
 
 	return s.repo.CreateUser(ctx, user)
+}
+
+func (s *AuthService) LoginUser(ctx context.Context, username, password string) (string, error) {
+	user, err := s.repo.FindByUsername(ctx, username)
+	if err != nil {
+		return "", err
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		return "", errors.New("invalid password")
+	}
+
+	return jwt.GenerateToken(user.ID)
 }
