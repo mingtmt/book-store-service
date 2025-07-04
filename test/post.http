@@ -27,4 +27,12 @@ PUT {{url_dev}}/books/5aa919ee-abf8-496b-b6c6-f62825319793
 ### delete a book
 DELETE {{url_dev}}/books/5aa919ee-abf8-496b-b6c6-f62825319793
 
+### register a new user
+POST {{url_dev}}/users/register
+
+{
+  "username": "john_doe",
+  "password": "securepassword"
+}
+
 
