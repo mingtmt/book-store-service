@@ -18,8 +18,8 @@ type Container struct {
 func NewContainer(dbPool *pgxpool.Pool) *Container {
 	// Users
 	userRepo := userRepo.NewUserRepository(dbPool)
-	userService := userService.NewAuthService(userRepo)
-	userHandler := userController.NewUserHandler(userService)
+	authService := userService.NewAuthService(userRepo)
+	userHandler := userController.NewUserHandler(authService)
 
 	// Books
 	bookRepo := bookRepo.NewBookRepository(dbPool)

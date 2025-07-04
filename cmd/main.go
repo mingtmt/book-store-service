@@ -9,11 +9,15 @@ import (
 	"github.com/mingtmt/book-store/internal/initialize"
 	"github.com/mingtmt/book-store/internal/middleware"
 	userController "github.com/mingtmt/book-store/internal/users/controller"
+	"github.com/mingtmt/book-store/internal/users/infrastructure/jwt"
 	"github.com/mingtmt/book-store/pkg/logger"
 )
 
 func main() {
+	// Initialize logger
 	logger.InitLogger()
+	// Initialize JWT keys
+	jwt.InitKeys()
 	// Load environment variables from .env file
 	if err := godotenv.Load(); err != nil {
 		logger.Error("Error loading .env file", err, nil)

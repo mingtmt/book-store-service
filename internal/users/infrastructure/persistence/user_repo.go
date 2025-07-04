@@ -48,3 +48,26 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *domain.User) (*do
 		Password: created.Password,
 	}, nil
 }
+
+func (r *UserRepository) FindByUsername(ctx context.Context, username string) (*domain.User, error) {
+	user, err := r.db.FindByUsername(ctx, username)
+	if err != nil {
+		logger.Error("failed to find user by username", err, map[string]interface{}{
+			"username": username,
+		})
+		return nil, err
+	}
+
+	if !user.ID.Valid {
+		logger.Warn("user not found", map[string]interface{}{
+			"username": username,
+		})
+		return nil, nil
+	}
+
+	return &domain.User{
+		ID:       user.ID.String(),
+		Username: user.Username,
+		Password: user.Password,
+	}, nil
+}
