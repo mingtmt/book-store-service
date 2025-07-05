@@ -1,4 +1,4 @@
-package jwt
+package token
 
 import (
 	"crypto/rsa"
@@ -14,11 +14,11 @@ var (
 )
 
 func InitKeys() error {
-	privData, err := os.ReadFile("internal/users/infrastructure/jwt/keys/private.pem")
+	privData, err := os.ReadFile("internal/auths/infrastructure/token/keys/private.pem")
 	if err != nil {
 		return err
 	}
-	pubData, err := os.ReadFile("internal/users/infrastructure/jwt/keys/public.pem")
+	pubData, err := os.ReadFile("internal/auths/infrastructure/token/keys/public.pem")
 	if err != nil {
 		return err
 	}
@@ -34,7 +34,7 @@ func InitKeys() error {
 func GenerateToken(userID string) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
-		"exp":     time.Now().Add(24 * time.Hour).Unix(), // Token valid for 24 hours
+		"exp":     time.Now().Add(24 * time.Hour).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	return token.SignedString(privateKey)

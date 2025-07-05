@@ -36,8 +36,10 @@ func (h *BookHandler) CreateBook(c *gin.Context) {
 	}
 
 	requestID := c.GetString(middleware.RequestIDKey)
+	userID := c.GetString("userID")
 	logger.InfoWithRequestID("book created", requestID, map[string]interface{}{
 		"book_id": book.ID,
+		"user_id": userID,
 	})
 
 	c.Status(http.StatusCreated)
@@ -52,8 +54,10 @@ func (h *BookHandler) GetBook(c *gin.Context) {
 	}
 
 	requestID := c.GetString(middleware.RequestIDKey)
+	userID := c.GetString("userID")
 	logger.InfoWithRequestID("book fetched", requestID, map[string]interface{}{
 		"book_id": book.ID,
+		"user_id": userID,
 	})
 
 	c.JSON(http.StatusOK, book)
@@ -67,8 +71,10 @@ func (h *BookHandler) GetAllBooks(c *gin.Context) {
 	}
 
 	requestID := c.GetString(middleware.RequestIDKey)
+	userID := c.GetString("userID")
 	logger.InfoWithRequestID("all books fetched", requestID, map[string]interface{}{
-		"total": len(books),
+		"total":   len(books),
+		"user_id": userID,
 	})
 
 	c.JSON(http.StatusOK, books)
@@ -94,8 +100,10 @@ func (h *BookHandler) UpdateBook(c *gin.Context) {
 	}
 
 	requestID := c.GetString(middleware.RequestIDKey)
+	userID := c.GetString("userID")
 	logger.InfoWithRequestID("book updated", requestID, map[string]interface{}{
 		"book_id": book.ID,
+		"user_id": userID,
 	})
 
 	c.JSON(http.StatusOK, book)
@@ -109,8 +117,10 @@ func (h *BookHandler) DeleteBook(c *gin.Context) {
 	}
 
 	requestID := c.GetString(middleware.RequestIDKey)
+	userID := c.GetString("userID")
 	logger.InfoWithRequestID("book deleted", requestID, map[string]interface{}{
 		"book_id": id,
+		"user_id": userID,
 	})
 
 	c.Status(http.StatusNoContent)

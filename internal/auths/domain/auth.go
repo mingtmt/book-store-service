@@ -1,6 +1,6 @@
 package domain
 
-type User struct {
+type Auth struct {
 	ID       string
 	Username string
 	Password string

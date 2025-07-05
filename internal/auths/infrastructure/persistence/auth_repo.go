@@ -6,28 +6,28 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/mingtmt/book-store/internal/users/domain"
-	"github.com/mingtmt/book-store/internal/users/infrastructure/persistence/usersdb"
+	"github.com/mingtmt/book-store/internal/auths/domain"
+	"github.com/mingtmt/book-store/internal/auths/infrastructure/persistence/authsdb"
 	"github.com/mingtmt/book-store/pkg/logger"
 )
 
-type UserRepository struct {
-	db *usersdb.Queries
+type AuthRepository struct {
+	db *authsdb.Queries
 }
 
-func NewUserRepository(pool *pgxpool.Pool) *UserRepository {
-	return &UserRepository{
-		db: usersdb.New(pool),
+func NewAuthRepository(pool *pgxpool.Pool) *AuthRepository {
+	return &AuthRepository{
+		db: authsdb.New(pool),
 	}
 }
 
-func (r *UserRepository) CreateUser(ctx context.Context, user *domain.User) (*domain.User, error) {
+func (r *AuthRepository) RegisterUser(ctx context.Context, user *domain.Auth) (*domain.Auth, error) {
 	id := pgtype.UUID{
 		Bytes: uuid.MustParse(user.ID),
 		Valid: true,
 	}
 
-	created, err := r.db.CreateUser(context.Background(), usersdb.CreateUserParams{
+	created, err := r.db.RegisterUser(context.Background(), authsdb.RegisterUserParams{
 		ID:       id,
 		Username: user.Username,
 		Password: user.Password,
@@ -42,14 +42,14 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *domain.User) (*do
 	logger.Info("user created successfully", map[string]interface{}{
 		"user_id": created.ID.String(),
 	})
-	return &domain.User{
+	return &domain.Auth{
 		ID:       created.ID.String(),
 		Username: created.Username,
 		Password: created.Password,
 	}, nil
 }
 
-func (r *UserRepository) FindByUsername(ctx context.Context, username string) (*domain.User, error) {
+func (r *AuthRepository) FindByUsername(ctx context.Context, username string) (*domain.Auth, error) {
 	user, err := r.db.FindByUsername(ctx, username)
 	if err != nil {
 		logger.Error("failed to find user by username", err, map[string]interface{}{
@@ -65,7 +65,7 @@ func (r *UserRepository) FindByUsername(ctx context.Context, username string) (*
 		return nil, nil
 	}
 
-	return &domain.User{
+	return &domain.Auth{
 		ID:       user.ID.String(),
 		Username: user.Username,
 		Password: user.Password,
