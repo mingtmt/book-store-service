@@ -23,6 +23,7 @@ help:
 install-tools:
 	go install github.com/pressly/goose/v3/cmd/goose@latest
 	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+	go install github.com/swaggo/swag/cmd/swag@latest
 
 # Run docker-compose to start all services
 .PHONY: run-services
@@ -53,6 +54,11 @@ migrate-down:
 .PHONY: reset
 reset:
 	goose -dir migrations postgres "$(DB_URL)" reset
+
+# Generate Swagger documentation
+.PHONY: swag
+swag:
+	swag init -g cmd/main.go
 
 # Full setup
 .PHONY: setup

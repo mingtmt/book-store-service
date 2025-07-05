@@ -6,8 +6,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/mingtmt/book-store/internal/auths/domain"
-	"github.com/mingtmt/book-store/internal/auths/infrastructure/persistence/authsdb"
+	"github.com/mingtmt/book-store/internal/auth/domain"
+	"github.com/mingtmt/book-store/internal/auth/infrastructure/persistence/authsdb"
 	"github.com/mingtmt/book-store/pkg/logger"
 )
 

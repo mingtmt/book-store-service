@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/mingtmt/book-store/internal/auths/infrastructure/token"
+	"github.com/mingtmt/book-store/internal/auth/infrastructure/token"
 )
 
 func JWTAuth() gin.HandlerFunc {

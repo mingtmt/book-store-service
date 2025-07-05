@@ -2,9 +2,9 @@ package initialize
 
 import (
 	"github.com/jackc/pgx/v5/pgxpool"
-	authService "github.com/mingtmt/book-store/internal/auths/application"
-	authController "github.com/mingtmt/book-store/internal/auths/controller"
-	authRepo "github.com/mingtmt/book-store/internal/auths/infrastructure/persistence"
+	authService "github.com/mingtmt/book-store/internal/auth/application"
+	authController "github.com/mingtmt/book-store/internal/auth/controller"
+	authRepo "github.com/mingtmt/book-store/internal/auth/infrastructure/persistence"
 	bookService "github.com/mingtmt/book-store/internal/books/application"
 	bookController "github.com/mingtmt/book-store/internal/books/controller"
 	bookRepo "github.com/mingtmt/book-store/internal/books/infrastructure/persistence"

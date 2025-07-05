@@ -5,8 +5,8 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
-	"github.com/mingtmt/book-store/internal/auths/domain"
-	"github.com/mingtmt/book-store/internal/auths/infrastructure/token"
+	"github.com/mingtmt/book-store/internal/auth/domain"
+	"github.com/mingtmt/book-store/internal/auth/infrastructure/token"
 	"golang.org/x/crypto/bcrypt"
 )
 

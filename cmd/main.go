@@ -1,3 +1,7 @@
+// @title Book Store API
+// @version 1.0
+// @description This is a sample server for a bookstore.
+// @BasePath /v1/api
 package main
 
 import (
@@ -5,12 +9,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	authController "github.com/mingtmt/book-store/internal/auths/controller"
-	"github.com/mingtmt/book-store/internal/auths/infrastructure/token"
+	_ "github.com/mingtmt/book-store/docs"
+	authController "github.com/mingtmt/book-store/internal/auth/controller"
+	"github.com/mingtmt/book-store/internal/auth/infrastructure/token"
 	bookController "github.com/mingtmt/book-store/internal/books/controller"
 	"github.com/mingtmt/book-store/internal/initialize"
 	"github.com/mingtmt/book-store/internal/middleware"
 	"github.com/mingtmt/book-store/pkg/logger"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func main() {
@@ -58,6 +65,9 @@ func main() {
 
 	bookGroup := api.Group("/books")
 	bookController.RegisterBookRoutes(bookGroup, container.BookHandler)
+
+	// Serve Swagger UI at /swagger/index.html
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	logger.Info("🚀 Server running", map[string]interface{}{"url": "http://localhost:" + port})
 	if err := r.Run(":" + port); err != nil {
