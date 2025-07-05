@@ -4,19 +4,19 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mingtmt/book-store/internal/users/application"
+	"github.com/mingtmt/book-store/internal/auths/application"
 	"github.com/mingtmt/book-store/pkg/logger"
 )
 
-type UserHandler struct {
+type AuthHandler struct {
 	authService *application.AuthService
 }
 
-func NewUserHandler(authService *application.AuthService) *UserHandler {
-	return &UserHandler{authService: authService}
+func NewAuthHandler(authService *application.AuthService) *AuthHandler {
+	return &AuthHandler{authService: authService}
 }
 
-func (h *UserHandler) RegisterUser(c *gin.Context) {
+func (h *AuthHandler) RegisterUser(c *gin.Context) {
 	var req struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
@@ -39,7 +39,7 @@ func (h *UserHandler) RegisterUser(c *gin.Context) {
 	c.Status(http.StatusCreated)
 }
 
-func (h *UserHandler) LoginUser(c *gin.Context) {
+func (h *AuthHandler) LoginUser(c *gin.Context) {
 	var req struct {
 		Username string `json:"username"`
 		Password string `json:"password"`

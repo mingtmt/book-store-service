@@ -1,4 +1,5 @@
 @url_dev =  http://localhost:8080/v1/api
+@jwt_token = eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTE4MDgxNzUsInVzZXJfaWQiOiJhYjYzMjQwYi04OTRkLTRjNjAtOTc3Yy1mYzhmNzRhY2U2NzkifQ.Nil4OoJ6uAJuBQ91e2DjCP-inmhcMCsZ9ywFE-S0KJ-PJ9j519spJBeTmjQltHSpnoNDZPHfqxczC9x16pxMIyeCH3e_CA1udkZwp_sIirFTCrFB-LGvvVTkUX4QJ7P8NtHJ0u1PGycEZHC2zk2ZrK8SaggOpNSf7sXJR9tVLNWx9w3AUhk9weu6oj0b-vGv02MSJtklxsO_Ifzg9DtPI2c_Qe7gBVlZy7Iu27URU_7nvkbxBTAI3UOXepTizC3n-FMsq7tFXkU2lga9AsVuo215_HsmLe4bknvbZ8Gf_gWn7NJTDjClvP910YZ2bPMI9x8leVibRUSMlGpvy99LYw
 
 ### create a new book
 POST {{url_dev}}/books/
@@ -14,6 +15,7 @@ GET {{url_dev}}/books/5aa919ee-abf8-496b-b6c6-f62825319793
 
 ### get all books
 GET {{url_dev}}/books/
+Authorization: Bearer {{jwt_token}}
 
 ### update a book
 PUT {{url_dev}}/books/5aa919ee-abf8-496b-b6c6-f62825319793
@@ -28,7 +30,7 @@ PUT {{url_dev}}/books/5aa919ee-abf8-496b-b6c6-f62825319793
 DELETE {{url_dev}}/books/5aa919ee-abf8-496b-b6c6-f62825319793
 
 ### register a new user
-POST {{url_dev}}/users/register
+POST {{url_dev}}/auth/register
 
 {
   "username": "john_doe",
@@ -36,7 +38,7 @@ POST {{url_dev}}/users/register
 }
 
 ### login a user
-POST {{url_dev}}/users/login
+POST {{url_dev}}/auth/login
 
 {
   "username": "john_doe",

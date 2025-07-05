@@ -34,10 +34,10 @@ run-services:
 sqlc-books:
 	sqlc generate -f internal/books/infrastructure/persistence/sqlc.yml
 	
-sqlc-users:
-	sqlc generate -f internal/users/infrastructure/persistence/sqlc.yml
+sqlc-auths:
+	sqlc generate -f internal/auths/infrastructure/persistence/sqlc.yml
 
-sqlc-all: sqlc-books sqlc-users
+sqlc-all: sqlc-books sqlc-auths
 
 # Run goose migrations
 .PHONY: migrate

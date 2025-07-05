@@ -2,23 +2,23 @@
 // versions:
 //   sqlc v1.29.0
 
-package usersdb
+package authsdb
 
 import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type Auth struct {
+	ID        pgtype.UUID
+	Username  string
+	Password  string
+	CreatedAt pgtype.Timestamp
+}
 
 type Book struct {
 	ID        pgtype.UUID
 	Title     string
 	Author    string
 	Price     pgtype.Numeric
-	CreatedAt pgtype.Timestamp
-}
-
-type User struct {
-	ID        pgtype.UUID
-	Username  string
-	Password  string
 	CreatedAt pgtype.Timestamp
 }
