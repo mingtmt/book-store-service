@@ -22,8 +22,11 @@ func New(code, message string, status int) *AppError {
 
 // Predefined errors
 var (
-	ErrNotFound     = New("NOT_FOUND", "resource not found", http.StatusNotFound)
-	ErrBadRequest   = New("BAD_REQUEST", "invalid request", http.StatusBadRequest)
-	ErrUnauthorized = New("UNAUTHORIZED", "unauthorized access", http.StatusUnauthorized)
-	ErrInternal     = New("INTERNAL_ERROR", "internal server error", http.StatusInternalServerError)
+	ErrNotFound          = New("NOT_FOUND", "resource not found", http.StatusNotFound)
+	ErrBadRequest        = New("BAD_REQUEST", "invalid request", http.StatusBadRequest)
+	ErrUnauthorized      = New("UNAUTHORIZED", "unauthorized access", http.StatusUnauthorized)
+	ErrInternal          = New("INTERNAL_ERROR", "internal server error", http.StatusInternalServerError)
+	ErrUserNotFound      = New("USER_NOT_FOUND", "user not found", http.StatusNotFound)
+	ErrUserAlreadyExists = New("USER_ALREADY_EXISTS", "user already exists", http.StatusConflict)
+	ErrInvalidPassword   = New("INVALID_PASSWORD", "invalid password", http.StatusUnauthorized)
 )
