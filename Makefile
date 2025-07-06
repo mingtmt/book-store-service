@@ -60,6 +60,11 @@ reset:
 swag:
 	swag init -g cmd/main.go
 
+# Run tests
+.PHONY: test
+test:
+	go test -v ./...
+
 # Full setup
 .PHONY: setup
 setup: install-tools sqlc migrate

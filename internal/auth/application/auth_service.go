@@ -2,11 +2,11 @@ package application
 
 import (
 	"context"
-	"errors"
 
 	"github.com/google/uuid"
 	"github.com/mingtmt/book-store/internal/auth/domain"
 	"github.com/mingtmt/book-store/internal/auth/infrastructure/token"
+	"github.com/mingtmt/book-store/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -24,6 +24,14 @@ func NewAuthService(repo AuthRepository) *AuthService {
 }
 
 func (s *AuthService) RegisterUser(ctx context.Context, username, password string) (*domain.Auth, error) {
+	existing, err := s.repo.FindByUsername(ctx, username)
+	if err != nil && err != errors.ErrUserNotFound {
+		return nil, err
+	}
+	if existing != nil {
+		return nil, errors.ErrUserAlreadyExists
+	}
+
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -45,7 +53,7 @@ func (s *AuthService) LoginUser(ctx context.Context, username, password string) 
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		return "", errors.New("invalid password")
+		return "", errors.ErrInvalidPassword
 	}
 
 	return token.GenerateToken(user.ID)
