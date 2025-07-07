@@ -17,10 +17,25 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.24" # or your preferred Go version
+          go-version: "1.24"
 
       - name: Install dependencies
         run: go mod download
 
-      - name: Run tests
-        run: go test ./...
+      - name: Run tests with coverage
+        run: |
+        go test ./... -v -coverprofile=coverage.out
+        go tool cover -func=coverage.out
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.out
+
+      - name: Check code coverage
+        run: |
+          coverage=$(go tool cover -func=coverage.out | grep total | awk '{print substr($3, 1, length($3)-1)}')
+          min_coverage=60.0  # set your threshold
+          echo "Coverage: $coverage%"
+          awk "BEGIN {exit ($coverage < $min_coverage) ? 1 : 0}"
