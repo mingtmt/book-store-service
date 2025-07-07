@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/github/mingtmt/book-store/graph/badge.svg?token=9FLQFFXLLH)](https://codecov.io/github/mingtmt/book-store)
+
 # Book Store API
 
 A simple, clean, and extensible RESTful API for managing books, built with Go, Gin, and PostgreSQL.
