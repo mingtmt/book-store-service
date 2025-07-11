@@ -64,3 +64,31 @@ func TestRegisterUser_UserAlreadyExists(t *testing.T) {
 	mockRepo.AssertNotCalled(t, "RegisterUser", mock.Anything)
 	mockRepo.AssertExpectations(t)
 }
+
+func TestRegisterUser_WithError(t *testing.T) {
+	mockRepo := new(MockAuthRepo)
+	service := NewAuthService(mockRepo)
+
+	mockRepo.On("FindByUsername", "testuser").Return(nil, errors.ErrInternal)
+
+	user, err := service.RegisterUser(context.Background(), "testuser", "testpassword")
+
+	assert.Error(t, err)
+	assert.Nil(t, user)
+	mockRepo.AssertNotCalled(t, "RegisterUser", mock.Anything)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestRegisterUser_PasswordNotEncrypt(t *testing.T) {
+	mockRepo := new(MockAuthRepo)
+	service := NewAuthService(mockRepo)
+
+	mockRepo.On("FindByUsername", "testuser").Return(nil, errors.ErrUserNotFound)
+	mockRepo.On("RegisterUser", mock.AnythingOfType("*domain.Auth")).Return(nil, errors.ErrInternal)
+
+	user, err := service.RegisterUser(context.Background(), "testuser", "testpassword")
+
+	assert.Error(t, err)
+	assert.Nil(t, user)
+	mockRepo.AssertExpectations(t)
+}
