@@ -7,6 +7,7 @@ package main
 import (
 	"os"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	_ "github.com/mingtmt/book-store/docs"
@@ -23,13 +24,14 @@ import (
 func main() {
 	// Initialize logger
 	logger.InitLogger()
-	// Initialize JWT keys
-	token.InitKeys()
 	// Load environment variables from .env file
 	if err := godotenv.Load(); err != nil {
 		logger.Error("Error loading .env file", err, nil)
 		os.Exit(1)
 	}
+
+	// Initialize JWT keys
+	token.InitKeys()
 
 	// Get port from environment or use default
 	port := os.Getenv("PORT")
@@ -49,6 +51,7 @@ func main() {
 
 	// Register middleware
 	r.Use(gin.Recovery())
+	r.Use(cors.Default())
 	r.Use(middleware.RequestID())
 	r.Use(middleware.ErrorHandler())
 
