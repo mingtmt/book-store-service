@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/mingtmt/book-store/internal/auth/domain"
@@ -112,7 +113,11 @@ func TestLoginUser_InvalidPassword(t *testing.T) {
 }
 
 func TestLoginUser_Success(t *testing.T) {
-	os.Setenv("KEY_PATH", "/home/btminh/book-store/internal/auth/infrastructure/token/keys")
+	root, _ := os.Getwd()
+	if filepath.Base(root) == "application" {
+		root = filepath.Dir(filepath.Dir(filepath.Dir(root)))
+	}
+	os.Setenv("KEY_PATH", filepath.Join(root, "internal/auth/infrastructure/token/keys"))
 	mockRepo := new(MockAuthRepo)
 	service := NewAuthService(mockRepo)
 
