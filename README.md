@@ -1,4 +1,5 @@
 [![codecov](https://codecov.io/github/mingtmt/book-store/graph/badge.svg?token=9FLQFFXLLH)](https://codecov.io/github/mingtmt/book-store)
+[![CodeQL](https://github.com/mingtmt/book-store/actions/workflows/codeql.yml/badge.svg)](https://github.com/mingtmt/book-store/actions/workflows/codeql.yml)
 
 # Book Store API
 
