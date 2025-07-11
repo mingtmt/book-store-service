@@ -14,11 +14,12 @@ var (
 )
 
 func InitKeys() error {
-	privData, err := os.ReadFile("internal/auth/infrastructure/token/keys/private.pem")
+	keyPath := os.Getenv("KEY_PATH")
+	privData, err := os.ReadFile(keyPath + "/private.pem")
 	if err != nil {
 		return err
 	}
-	pubData, err := os.ReadFile("internal/auth/infrastructure/token/keys/public.pem")
+	pubData, err := os.ReadFile(keyPath + "/public.pem")
 	if err != nil {
 		return err
 	}
