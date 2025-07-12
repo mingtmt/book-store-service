@@ -2,12 +2,15 @@ package persistence
 
 import (
 	"context"
+	"database/sql"
+	errs "errors"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/mingtmt/book-store/internal/auth/domain"
 	"github.com/mingtmt/book-store/internal/auth/infrastructure/persistence/authsdb"
+	"github.com/mingtmt/book-store/pkg/errors"
 	"github.com/mingtmt/book-store/pkg/logger"
 )
 
@@ -52,9 +55,13 @@ func (r *AuthRepository) RegisterUser(ctx context.Context, user *domain.Auth) (*
 func (r *AuthRepository) FindByUsername(ctx context.Context, username string) (*domain.Auth, error) {
 	user, err := r.db.FindByUsername(ctx, username)
 	if err != nil {
-		logger.Error("failed to find user by username", err, map[string]interface{}{
-			"username": username,
-		})
+		if errs.Is(err, sql.ErrNoRows) {
+			logger.Error("failed to find user by username", err, map[string]interface{}{
+				"username": username,
+			})
+			return nil, errors.ErrUserNotFound
+		}
+
 		return nil, err
 	}
 

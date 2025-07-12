@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mingtmt/book-store/internal/auth/application"
+	"github.com/mingtmt/book-store/internal/auth/infrastructure/token"
 	"github.com/mingtmt/book-store/pkg/logger"
 )
 
@@ -55,7 +56,13 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 		"user_id": user.ID,
 	})
 
-	c.Status(http.StatusCreated)
+	token, err := token.GenerateToken(user.ID)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"token": token})
 }
 
 // LoginUser godoc
