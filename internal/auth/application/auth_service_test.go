@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/mingtmt/book-store/internal/auth/domain"
-	"github.com/mingtmt/book-store/internal/auth/infrastructure/token"
 	"github.com/mingtmt/book-store/pkg/errors"
+	"github.com/mingtmt/book-store/pkg/token"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -90,9 +90,10 @@ func TestLoginUser_UserNotFound(t *testing.T) {
 
 	mockRepo.On("FindByUsername", "nouser").Return(nil, errors.ErrUserNotFound)
 
-	token, err := service.LoginUser(context.Background(), "nouser", "irrelevant")
+	accessToken, refresToken, err := service.LoginUser(context.Background(), "nouser", "irrelevant")
 	assert.Error(t, err)
-	assert.Equal(t, "", token)
+	assert.Equal(t, "", accessToken)
+	assert.Equal(t, "", refresToken)
 	mockRepo.AssertExpectations(t)
 }
 
@@ -105,9 +106,10 @@ func TestLoginUser_InvalidPassword(t *testing.T) {
 
 	mockRepo.On("FindByUsername", "testuser").Return(user, nil)
 
-	token, err := service.LoginUser(context.Background(), "testuser", "wrongpass")
+	accessToken, refreshToken, err := service.LoginUser(context.Background(), "testuser", "wrongpass")
 	assert.Error(t, err)
-	assert.Equal(t, "", token)
+	assert.Equal(t, "", accessToken)
+	assert.Equal(t, "", refreshToken)
 	assert.Equal(t, errors.ErrInvalidPassword, err)
 	mockRepo.AssertExpectations(t)
 }
@@ -129,8 +131,9 @@ func TestLoginUser_Success(t *testing.T) {
 
 	mockRepo.On("FindByUsername", "testuser").Return(user, nil)
 
-	token, err := service.LoginUser(context.Background(), "testuser", "secretpass")
+	accessToken, refreshToken, err := service.LoginUser(context.Background(), "testuser", "secretpass")
 	assert.NoError(t, err)
-	assert.NotEmpty(t, token)
+	assert.NotEmpty(t, accessToken)
+	assert.NotEmpty(t, refreshToken)
 	mockRepo.AssertExpectations(t)
 }

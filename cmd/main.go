@@ -12,11 +12,11 @@ import (
 	"github.com/joho/godotenv"
 	_ "github.com/mingtmt/book-store/docs"
 	authController "github.com/mingtmt/book-store/internal/auth/controller"
-	"github.com/mingtmt/book-store/internal/auth/infrastructure/token"
 	bookController "github.com/mingtmt/book-store/internal/books/controller"
 	"github.com/mingtmt/book-store/internal/initialize"
 	"github.com/mingtmt/book-store/internal/middleware"
 	"github.com/mingtmt/book-store/pkg/logger"
+	"github.com/mingtmt/book-store/pkg/token"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
