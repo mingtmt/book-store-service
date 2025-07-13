@@ -5,19 +5,23 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mingtmt/book-store/internal/auth/application"
-	"github.com/mingtmt/book-store/internal/auth/infrastructure/token"
 	"github.com/mingtmt/book-store/pkg/logger"
+	"github.com/mingtmt/book-store/pkg/token"
 )
 
-// AuthRequest represents the login payload
+// Request payloads
 type AuthRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
+type RefreshRequest struct {
+	RefreshToken string `json:"refresh_token"`
+}
 
-// AuthResponse represents the login response payload
+// Response payloads
 type AuthResponse struct {
-	Token string `json:"token"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 type AuthHandler struct {
@@ -56,13 +60,16 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 		"user_id": user.ID,
 	})
 
-	token, err := token.GenerateToken(user.ID)
+	accessToken, refreshToken, err := token.GenerateTokenPair(user.ID)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"token": token})
+	c.JSON(http.StatusCreated, gin.H{
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
+	})
 }
 
 // LoginUser godoc
@@ -83,7 +90,7 @@ func (h *AuthHandler) LoginUser(c *gin.Context) {
 		return
 	}
 
-	token, err := h.authService.LoginUser(c.Request.Context(), req.Username, req.Password)
+	accessToken, refreshToken, err := h.authService.LoginUser(c.Request.Context(), req.Username, req.Password)
 	if err != nil {
 		c.Error(err)
 		return
@@ -94,6 +101,37 @@ func (h *AuthHandler) LoginUser(c *gin.Context) {
 	})
 
 	c.JSON(http.StatusOK, gin.H{
-		"token": token,
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
+	})
+}
+
+// RefreshLogin godoc
+// @Summary Refresh JWT token
+// @Description Refresh JWT token using refresh token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param refresh body controller.RefreshRequest true "Refresh token"
+// @Success 200 {object} controller.AuthResponse
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 401 {object} response.ErrorResponse
+// @Router /auth/refresh [post]
+func (h *AuthHandler) RefreshLogin(c *gin.Context) {
+	var req RefreshRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Error(err)
+		return
+	}
+
+	accessToken, err := h.authService.RefreshLogin(c.Request.Context(), req.RefreshToken)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"access_token":  accessToken,
+		"refresh_token": req.RefreshToken,
 	})
 }

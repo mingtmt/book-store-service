@@ -29,4 +29,5 @@ var (
 	ErrUserNotFound      = New("USER_NOT_FOUND", "user not found", http.StatusNotFound)
 	ErrUserAlreadyExists = New("USER_ALREADY_EXISTS", "user already exists", http.StatusConflict)
 	ErrInvalidPassword   = New("INVALID_PASSWORD", "invalid password", http.StatusUnauthorized)
+	ErrInvalidToken      = New("INVALID_TOKEN", "invalid token", http.StatusUnauthorized)
 )

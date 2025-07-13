@@ -32,13 +32,23 @@ func InitKeys() error {
 	return err
 }
 
-func GenerateToken(userID string) (string, error) {
+func GenerateToken(userID string, duration time.Duration) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
-		"exp":     time.Now().Add(24 * time.Hour).Unix(),
+		"exp":     time.Now().Add(duration).Unix(),
+		"iat":     time.Now().Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	return token.SignedString(privateKey)
+}
+
+func GenerateTokenPair(userID string) (accessToken, refreshToken string, err error) {
+	accessToken, err = GenerateToken(userID, 15*time.Minute) // short-lived
+	if err != nil {
+		return "", "", err
+	}
+	refreshToken, err = GenerateToken(userID, 7*24*time.Hour) // long-lived
+	return
 }
 
 func ValidateToken(tokenString string) (*jwt.Token, error) {
