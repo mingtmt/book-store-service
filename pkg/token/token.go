@@ -42,13 +42,21 @@ func GenerateToken(userID string, duration time.Duration) (string, error) {
 	return token.SignedString(privateKey)
 }
 
-func GenerateTokenPair(userID string) (accessToken, refreshToken string, err error) {
-	accessToken, err = GenerateToken(userID, 15*time.Minute) // short-lived
+func GenerateTokenPair(userID string) (accessToken string, refreshToken string, refreshExp time.Time, err error) {
+	accessToken, err = GenerateToken(userID, 15*time.Minute)
 	if err != nil {
-		return "", "", err
+		return "", "", time.Time{}, err
 	}
-	refreshToken, err = GenerateToken(userID, 7*24*time.Hour) // long-lived
-	return
+
+	refreshTTL := 7 * 24 * time.Hour
+	refreshExp = time.Now().Add(refreshTTL)
+
+	refreshToken, err = GenerateToken(userID, refreshTTL)
+	if err != nil {
+		return "", "", time.Time{}, err
+	}
+
+	return accessToken, refreshToken, refreshExp, nil
 }
 
 func ValidateToken(tokenString string) (*jwt.Token, error) {

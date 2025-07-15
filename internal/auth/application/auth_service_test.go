@@ -5,7 +5,9 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/mingtmt/book-store/internal/auth/domain"
 	"github.com/mingtmt/book-store/pkg/errors"
 	"github.com/mingtmt/book-store/pkg/token"
@@ -35,6 +37,29 @@ func (m *MockAuthRepo) FindByUsername(ctx context.Context, username string) (*do
 	return nil, args.Error(1)
 }
 
+func (m *MockAuthRepo) CreateRefreshToken(ctx context.Context, userID uuid.UUID, token string, expiresAt time.Time) error {
+	args := m.Called(userID, token, expiresAt)
+	return args.Error(0)
+}
+
+func (m *MockAuthRepo) GetRefreshToken(ctx context.Context, tokenStr string) (*domain.RefreshToken, error) {
+	args := m.Called(tokenStr)
+	if refreshToken, ok := args.Get(0).(*domain.RefreshToken); ok {
+		return refreshToken, args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+func (m *MockAuthRepo) RevokeRefreshToken(ctx context.Context, tokenStr string) error {
+	args := m.Called(tokenStr)
+	return args.Error(0)
+}
+
+func (m *MockAuthRepo) DeleteExpiredRefreshTokens(ctx context.Context) error {
+	args := m.Called()
+	return args.Error(0)
+}
+
 func TestRegisterUser_Success(t *testing.T) {
 	mockRepo := new(MockAuthRepo)
 	service := NewAuthService(mockRepo)
@@ -45,11 +70,13 @@ func TestRegisterUser_Success(t *testing.T) {
 		Username: "testuser",
 	}, nil)
 
-	user, err := service.RegisterUser(context.Background(), "testuser", "testpassword")
+	user, accessToken, refreshToken, err := service.RegisterUser(context.Background(), "testuser", "testpassword")
 
 	assert.NoError(t, err)
 	assert.Equal(t, "testuser", user.Username)
 	assert.Equal(t, "test-id", user.ID)
+	assert.NotEmpty(t, accessToken)
+	assert.NotEmpty(t, refreshToken)
 	mockRepo.AssertExpectations(t)
 }
 
@@ -60,12 +87,14 @@ func TestRegisterUser_UserAlreadyExists(t *testing.T) {
 
 	mockRepo.On("FindByUsername", "testuser").Return(existingUser, nil)
 
-	user, err := service.RegisterUser(
+	user, accessToken, refreshToken, err := service.RegisterUser(
 		context.Background(), "testuser", "testpassword",
 	)
 
 	assert.Error(t, err)
 	assert.Nil(t, user)
+	assert.Empty(t, accessToken)
+	assert.Empty(t, refreshToken)
 	mockRepo.AssertNotCalled(t, "RegisterUser", mock.Anything)
 	mockRepo.AssertExpectations(t)
 }
@@ -76,10 +105,12 @@ func TestRegisterUser_WithError(t *testing.T) {
 
 	mockRepo.On("FindByUsername", "testuser").Return(nil, errors.ErrInternal)
 
-	user, err := service.RegisterUser(context.Background(), "testuser", "testpassword")
+	user, accessToken, refreshToken, err := service.RegisterUser(context.Background(), "testuser", "testpassword")
 
 	assert.Error(t, err)
 	assert.Nil(t, user)
+	assert.Empty(t, accessToken)
+	assert.Empty(t, refreshToken)
 	mockRepo.AssertNotCalled(t, "RegisterUser", mock.Anything)
 	mockRepo.AssertExpectations(t)
 }

@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mingtmt/book-store/internal/auth/application"
 	"github.com/mingtmt/book-store/pkg/logger"
-	"github.com/mingtmt/book-store/pkg/token"
 )
 
 // Request payloads
@@ -50,7 +49,7 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	user, err := h.authService.RegisterUser(c.Request.Context(), req.Username, req.Password)
+	user, accessToken, refreshToken, err := h.authService.RegisterUser(c.Request.Context(), req.Username, req.Password)
 	if err != nil {
 		c.Error(err)
 		return
@@ -59,12 +58,6 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 	logger.Info("user registered successfully", map[string]interface{}{
 		"user_id": user.ID,
 	})
-
-	accessToken, refreshToken, err := token.GenerateTokenPair(user.ID)
-	if err != nil {
-		c.Error(err)
-		return
-	}
 
 	c.JSON(http.StatusCreated, gin.H{
 		"access_token":  accessToken,
@@ -106,32 +99,23 @@ func (h *AuthHandler) LoginUser(c *gin.Context) {
 	})
 }
 
-// RefreshLogin godoc
-// @Summary Refresh JWT token
-// @Description Refresh JWT token using refresh token
-// @Tags auth
-// @Accept json
-// @Produce json
-// @Param refresh body controller.RefreshRequest true "Refresh token"
-// @Success 200 {object} controller.AuthResponse
-// @Failure 400 {object} response.ErrorResponse
-// @Failure 401 {object} response.ErrorResponse
-// @Router /auth/refresh [post]
-func (h *AuthHandler) RefreshLogin(c *gin.Context) {
-	var req RefreshRequest
+func (h *AuthHandler) RefreshToken(c *gin.Context) {
+	var req struct {
+		RefreshToken string `json:"refresh_token"`
+	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Error(err)
 		return
 	}
 
-	accessToken, err := h.authService.RefreshLogin(c.Request.Context(), req.RefreshToken)
+	access, refresh, err := h.authService.RefreshToken(c.Request.Context(), req.RefreshToken)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"access_token":  accessToken,
-		"refresh_token": req.RefreshToken,
+		"access_token":  access,
+		"refresh_token": refresh,
 	})
 }

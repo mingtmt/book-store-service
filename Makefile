@@ -36,7 +36,7 @@ sqlc-books:
 	sqlc generate -f internal/books/infrastructure/persistence/sqlc.yml
 	
 sqlc-auths:
-	sqlc generate -f internal/auths/infrastructure/persistence/sqlc.yml
+	sqlc generate -f internal/auth/infrastructure/persistence/sqlc.yml
 
 sqlc-all: sqlc-books sqlc-auths
 
