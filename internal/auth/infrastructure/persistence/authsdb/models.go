@@ -22,3 +22,12 @@ type Book struct {
 	Price     pgtype.Numeric
 	CreatedAt pgtype.Timestamp
 }
+
+type RefreshToken struct {
+	ID        pgtype.UUID
+	UserID    pgtype.UUID
+	Token     string
+	ExpiresAt pgtype.Timestamp
+	CreatedAt pgtype.Timestamp
+	Revoked   pgtype.Bool
+}
