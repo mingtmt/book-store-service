@@ -26,15 +26,11 @@ func SetupRouter(container *Container) *gin.Engine {
 	r.Use(middleware.RequestID())
 	r.Use(middleware.ErrorHandler())
 
-	// Public routes
-	authGroup := r.Group("/v1/api/auth")
+	apiPrefix := "/v1/api"
+
+	authGroup := r.Group(apiPrefix + "/auth")
 	authController.RegisterUserRoutes(authGroup, container.AuthHandler)
-
-	// Protected routes
-	api := r.Group("/v1/api")
-	api.Use(middleware.JWTAuth())
-
-	bookGroup := api.Group("/books")
+	bookGroup := r.Group(apiPrefix + "/books")
 	bookController.RegisterBookRoutes(bookGroup, container.BookHandler)
 
 	// Swagger
