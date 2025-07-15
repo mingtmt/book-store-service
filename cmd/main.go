@@ -7,18 +7,11 @@ package main
 import (
 	"os"
 
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	_ "github.com/mingtmt/book-store/docs"
-	authController "github.com/mingtmt/book-store/internal/auth/controller"
-	bookController "github.com/mingtmt/book-store/internal/books/controller"
 	"github.com/mingtmt/book-store/internal/initialize"
-	"github.com/mingtmt/book-store/internal/middleware"
 	"github.com/mingtmt/book-store/pkg/logger"
 	"github.com/mingtmt/book-store/pkg/token"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func main() {
@@ -46,31 +39,10 @@ func main() {
 	}
 	defer dbPool.Close()
 
-	// Set up Gin router
-	r := gin.Default()
-
-	// Register middleware
-	r.Use(gin.Recovery())
-	r.Use(cors.Default())
-	r.Use(middleware.RequestID())
-	r.Use(middleware.ErrorHandler())
-
 	// Initialize DI container
 	container := initialize.NewContainer(dbPool)
 
-	// Public endpoints
-	authGroup := r.Group("v1/api/auth")
-	authController.RegisterUserRoutes(authGroup, container.AuthHandler)
-
-	// Protected endpoints
-	api := r.Group("v1/api")
-	api.Use(middleware.JWTAuth())
-
-	bookGroup := api.Group("/books")
-	bookController.RegisterBookRoutes(bookGroup, container.BookHandler)
-
-	// Serve Swagger UI at /swagger/index.html
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r := initialize.SetupRouter(container)
 
 	logger.Info("🚀 Server running", map[string]interface{}{"url": "http://localhost:" + port})
 	if err := r.Run(":" + port); err != nil {
