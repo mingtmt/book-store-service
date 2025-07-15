@@ -1,11 +1,21 @@
 package controller
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/mingtmt/book-store/internal/middleware"
+)
 
 func RegisterBookRoutes(r *gin.RouterGroup, handler *BookHandler) {
-	r.POST("/", handler.CreateBook)
-	r.GET("/:id", handler.GetBook)
+	// Public routes
 	r.GET("/", handler.GetAllBooks)
-	r.PUT("/:id", handler.UpdateBook)
-	r.DELETE("/:id", handler.DeleteBook)
+	r.GET(":id", handler.GetBook)
+
+	// Protected routes
+	authorized := r.Group("/")
+	authorized.Use(middleware.JWTAuth())
+	{
+		authorized.POST("", handler.CreateBook)
+		authorized.PUT(":id", handler.UpdateBook)
+		authorized.DELETE(":id", handler.DeleteBook)
+	}
 }

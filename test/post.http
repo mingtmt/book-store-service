@@ -16,7 +16,6 @@ GET {{url_dev}}/books/5aa919ee-abf8-496b-b6c6-f62825319793
 
 ### get all books
 GET {{url_dev}}/books/
-Authorization: Bearer {{jwt_token}}
 
 ### update a book
 PUT {{url_dev}}/books/5aa919ee-abf8-496b-b6c6-f62825319793
