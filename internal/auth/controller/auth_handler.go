@@ -13,7 +13,7 @@ type AuthRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
-type RefreshRequest struct {
+type ReAuthRequest struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
@@ -99,10 +99,19 @@ func (h *AuthHandler) LoginUser(c *gin.Context) {
 	})
 }
 
+// RefreshToken godoc
+// @Summary Refresh JWT token
+// @Description Refresh access token using refresh token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param refresh body controller.ReAuthRequest true "Refresh token"
+// @Success 200 {object} controller.AuthResponse
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 401 {object} response.ErrorResponse
+// @Router /auth/refresh [post]
 func (h *AuthHandler) RefreshToken(c *gin.Context) {
-	var req struct {
-		RefreshToken string `json:"refresh_token"`
-	}
+	var req ReAuthRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Error(err)
 		return
@@ -118,4 +127,31 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 		"access_token":  access,
 		"refresh_token": refresh,
 	})
+}
+
+// LogoutUser godoc
+// @Summary Logout user
+// @Description Invalidate refresh token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param logout body controller.ReAuthRequest true "Logout request"
+// @Success 200 {object} response.MessageResponse
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 401 {object} response.ErrorResponse
+// @Router /auth/logout [post]
+func (h *AuthHandler) LogoutUser(c *gin.Context) {
+	var req ReAuthRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Error(err)
+		return
+	}
+
+	err := h.authService.LogoutUser(c.Request.Context(), req.RefreshToken)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 }

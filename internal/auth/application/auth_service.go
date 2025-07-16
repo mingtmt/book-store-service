@@ -126,3 +126,7 @@ func (s *AuthService) RefreshToken(ctx context.Context, tokenStr string) (string
 
 	return access, refresh, nil
 }
+
+func (s *AuthService) LogoutUser(ctx context.Context, tokenStr string) error {
+	return s.repo.RevokeRefreshToken(ctx, tokenStr)
+}
