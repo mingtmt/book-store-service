@@ -12,7 +12,7 @@ import (
 )
 
 type AuthRepository interface {
-	RegisterUser(ctx context.Context, user *domain.Auth) (*domain.Auth, error)
+	RegisterUser(ctx context.Context, user *domain.Auth) (string, error)
 	FindByUsername(ctx context.Context, username string) (*domain.Auth, error)
 	CreateRefreshToken(ctx context.Context, userID uuid.UUID, token string, expiresAt time.Time) error
 	GetRefreshToken(ctx context.Context, tokenStr string) (*domain.RefreshToken, error)
@@ -28,18 +28,18 @@ func NewAuthService(repo AuthRepository) *AuthService {
 	return &AuthService{repo: repo}
 }
 
-func (s *AuthService) RegisterUser(ctx context.Context, username, password string) (*domain.Auth, string, string, error) {
+func (s *AuthService) RegisterUser(ctx context.Context, username, password string) (string, string, string, error) {
 	existing, err := s.repo.FindByUsername(ctx, username)
 	if err != nil && err != errors.ErrUserNotFound {
-		return nil, "", "", err
+		return "", "", "", err
 	}
 	if existing != nil {
-		return nil, "", "", errors.ErrUserAlreadyExists
+		return "", "", "", errors.ErrUserAlreadyExists
 	}
 
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, "", "", err
+		return "", "", "", err
 	}
 
 	user := &domain.Auth{
@@ -48,23 +48,23 @@ func (s *AuthService) RegisterUser(ctx context.Context, username, password strin
 		Password: string(hashed),
 	}
 
-	newUser, err := s.repo.RegisterUser(ctx, user)
+	userID, err := s.repo.RegisterUser(ctx, user)
 	if err != nil {
-		return nil, "", "", err
+		return "", "", "", err
 	}
 
 	// Generate access and refresh tokens, and store the refresh token
-	accessToken, refreshToken, refreshExp, err := token.GenerateTokenPair(newUser.ID)
+	accessToken, refreshToken, refreshExp, err := token.GenerateTokenPair(userID)
 	if err != nil {
-		return nil, "", "", err
+		return "", "", "", err
 	}
 
-	err = s.repo.CreateRefreshToken(ctx, uuid.MustParse(newUser.ID), refreshToken, refreshExp)
+	err = s.repo.CreateRefreshToken(ctx, uuid.MustParse(userID), refreshToken, refreshExp)
 	if err != nil {
-		return nil, "", "", err
+		return "", "", "", err
 	}
 
-	return newUser, accessToken, refreshToken, nil
+	return userID, accessToken, refreshToken, nil
 }
 
 func (s *AuthService) LoginUser(ctx context.Context, username, password string) (string, string, error) {

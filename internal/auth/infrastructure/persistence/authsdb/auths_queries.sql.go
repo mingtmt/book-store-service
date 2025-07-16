@@ -7,8 +7,6 @@ package authsdb
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const findByUsername = `-- name: FindByUsername :one
@@ -29,20 +27,19 @@ func (q *Queries) FindByUsername(ctx context.Context, username string) (Auth, er
 
 const registerUser = `-- name: RegisterUser :one
 INSERT INTO
-    auths (id, username, password)
-VALUES ($1, $2, $3)
+    auths (username, password)
+VALUES ($1, $2)
 RETURNING
     id, username, password, created_at
 `
 
 type RegisterUserParams struct {
-	ID       pgtype.UUID
 	Username string
 	Password string
 }
 
 func (q *Queries) RegisterUser(ctx context.Context, arg RegisterUserParams) (Auth, error) {
-	row := q.db.QueryRow(ctx, registerUser, arg.ID, arg.Username, arg.Password)
+	row := q.db.QueryRow(ctx, registerUser, arg.Username, arg.Password)
 	var i Auth
 	err := row.Scan(
 		&i.ID,

@@ -49,14 +49,14 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	user, accessToken, refreshToken, err := h.authService.RegisterUser(c.Request.Context(), req.Username, req.Password)
+	userID, accessToken, refreshToken, err := h.authService.RegisterUser(c.Request.Context(), req.Username, req.Password)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
 	logger.Info("user registered successfully", map[string]interface{}{
-		"user_id": user.ID,
+		"user_id": userID,
 	})
 
 	c.JSON(http.StatusCreated, gin.H{

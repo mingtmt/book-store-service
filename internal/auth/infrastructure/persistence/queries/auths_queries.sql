@@ -1,7 +1,7 @@
 -- name: RegisterUser :one
 INSERT INTO
-    auths (id, username, password)
-VALUES ($1, $2, $3)
+    auths (username, password)
+VALUES ($1, $2)
 RETURNING
     *;
 -- name: FindByUsername :one

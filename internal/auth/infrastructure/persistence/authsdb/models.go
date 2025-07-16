@@ -15,14 +15,6 @@ type Auth struct {
 	CreatedAt pgtype.Timestamp
 }
 
-type Book struct {
-	ID        pgtype.UUID
-	Title     string
-	Author    string
-	Price     pgtype.Numeric
-	CreatedAt pgtype.Timestamp
-}
-
 type RefreshToken struct {
 	ID        pgtype.UUID
 	UserID    pgtype.UUID

@@ -25,14 +25,8 @@ func NewAuthRepository(pool *pgxpool.Pool) *AuthRepository {
 	}
 }
 
-func (r *AuthRepository) RegisterUser(ctx context.Context, user *domain.Auth) (*domain.Auth, error) {
-	id := pgtype.UUID{
-		Bytes: uuid.MustParse(user.ID),
-		Valid: true,
-	}
-
+func (r *AuthRepository) RegisterUser(ctx context.Context, user *domain.Auth) (string, error) {
 	created, err := r.db.RegisterUser(context.Background(), authsdb.RegisterUserParams{
-		ID:       id,
 		Username: user.Username,
 		Password: user.Password,
 	})
@@ -40,17 +34,13 @@ func (r *AuthRepository) RegisterUser(ctx context.Context, user *domain.Auth) (*
 		logger.Error("failed to create user in database", err, map[string]interface{}{
 			"user_id": user.ID,
 		})
-		return nil, err
+		return "", err
 	}
 
 	logger.Info("user created successfully", map[string]interface{}{
 		"user_id": created.ID.String(),
 	})
-	return &domain.Auth{
-		ID:       created.ID.String(),
-		Username: created.Username,
-		Password: created.Password,
-	}, nil
+	return created.ID.String(), nil
 }
 
 func (r *AuthRepository) FindByUsername(ctx context.Context, username string) (*domain.Auth, error) {

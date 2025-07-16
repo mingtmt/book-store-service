@@ -12,25 +12,21 @@ import (
 )
 
 const createBook = `-- name: CreateBook :one
-INSERT INTO books (id, title, author, price)
-VALUES ($1, $2, $3, $4)
-RETURNING id, title, author, price, created_at
+INSERT INTO
+    books (title, author, price)
+VALUES ($1, $2, $3)
+RETURNING
+    id, title, author, price, created_at
 `
 
 type CreateBookParams struct {
-	ID     pgtype.UUID
 	Title  string
 	Author string
 	Price  pgtype.Numeric
 }
 
 func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) (Book, error) {
-	row := q.db.QueryRow(ctx, createBook,
-		arg.ID,
-		arg.Title,
-		arg.Author,
-		arg.Price,
-	)
+	row := q.db.QueryRow(ctx, createBook, arg.Title, arg.Author, arg.Price)
 	var i Book
 	err := row.Scan(
 		&i.ID,
@@ -43,9 +39,7 @@ func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) (Book, e
 }
 
 const deleteBook = `-- name: DeleteBook :exec
-DELETE 
-FROM books 
-WHERE id = $1
+DELETE FROM books WHERE id = $1
 `
 
 func (q *Queries) DeleteBook(ctx context.Context, id pgtype.UUID) error {
@@ -54,9 +48,7 @@ func (q *Queries) DeleteBook(ctx context.Context, id pgtype.UUID) error {
 }
 
 const getBook = `-- name: GetBook :one
-SELECT id, title, author, price, created_at
-FROM books
-WHERE id = $1
+SELECT id, title, author, price, created_at FROM books WHERE id = $1
 `
 
 func (q *Queries) GetBook(ctx context.Context, id pgtype.UUID) (Book, error) {
@@ -73,9 +65,7 @@ func (q *Queries) GetBook(ctx context.Context, id pgtype.UUID) (Book, error) {
 }
 
 const listBooks = `-- name: ListBooks :many
-SELECT id, title, author, price, created_at
-FROM books
-ORDER BY created_at DESC
+SELECT id, title, author, price, created_at FROM books ORDER BY created_at DESC
 `
 
 func (q *Queries) ListBooks(ctx context.Context) ([]Book, error) {
@@ -106,9 +96,14 @@ func (q *Queries) ListBooks(ctx context.Context) ([]Book, error) {
 
 const updateBook = `-- name: UpdateBook :one
 UPDATE books
-SET title = $2, author = $3, price = $4
-WHERE id = $1
-RETURNING id, title, author, price, created_at
+SET
+    title = $2,
+    author = $3,
+    price = $4
+WHERE
+    id = $1
+RETURNING
+    id, title, author, price, created_at
 `
 
 type UpdateBookParams struct {
