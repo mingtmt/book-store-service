@@ -14,9 +14,9 @@ help:
 	@echo "  make run-services     - Start all services using docker-compose"
 	@echo "  make sqlc             - Generate code from SQL files"
 	@echo "  make migrate          - Run goose up migration"
-	@echo "  make migrate-down     - Rollback one migration"
-	@echo "  make reset            - Drop all tables and rerun migrations (⚠️ destructive)"
 	@echo "  make setup            - Full project setup"
+	@echo "  make swag			   - Generate Swagger documentation"
+	@echo "  make test             - Run tests"
 
 # Install goose and sqlc
 .PHONY: install-tools
@@ -45,15 +45,15 @@ sqlc-all: sqlc-books sqlc-auths
 migrate:
 	goose -dir migrations postgres "$(DB_URL)" up
 
-# Rollback last migration
-.PHONY: migrate-down
 migrate-down:
 	goose -dir migrations postgres "$(DB_URL)" down
-
-# Drop all tables and re-run migrations (⚠️ destructive)
-.PHONY: reset
-reset:
+	
+migrate-reset:
 	goose -dir migrations postgres "$(DB_URL)" reset
+
+# Full setup
+.PHONY: setup
+setup: install-tools sqlc migrate
 
 # Generate Swagger documentation
 .PHONY: swag
@@ -64,7 +64,3 @@ swag:
 .PHONY: test
 test:
 	go test -v ./...
-
-# Full setup
-.PHONY: setup
-setup: install-tools sqlc migrate

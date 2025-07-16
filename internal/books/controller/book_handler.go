@@ -47,7 +47,7 @@ func (h *BookHandler) CreateBook(c *gin.Context) {
 		return
 	}
 
-	book, err := h.service.CreateBook(c.Request.Context(), req.Title, req.Author, req.Price)
+	bookID, err := h.service.CreateBook(c.Request.Context(), req.Title, req.Author, req.Price)
 	if err != nil {
 		c.Error(err)
 		return
@@ -56,7 +56,7 @@ func (h *BookHandler) CreateBook(c *gin.Context) {
 	requestID := c.GetString(middleware.RequestIDKey)
 	userID := c.GetString("userID")
 	logger.InfoWithRequestID("book created", requestID, map[string]interface{}{
-		"book_id": book.ID,
+		"book_id": bookID,
 		"user_id": userID,
 	})
 

@@ -21,23 +21,17 @@ func NewBookRepository(pool *pgxpool.Pool) *BookRepository {
 	}
 }
 
-func (r *BookRepository) CreateBook(ctx context.Context, book domain.Book) (*domain.Book, error) {
+func (r *BookRepository) CreateBook(ctx context.Context, book domain.Book) (string, error) {
 	var price pgtype.Numeric
 	if err := price.Scan(book.Price); err != nil {
 		logger.Error("failed to convert price", err, map[string]interface{}{
 			"book_id": book.ID,
 			"price":   book.Price,
 		})
-		return nil, err
-	}
-
-	id := pgtype.UUID{
-		Bytes: uuid.MustParse(book.ID),
-		Valid: true,
+		return "", err
 	}
 
 	created, err := r.db.CreateBook(ctx, booksdb.CreateBookParams{
-		ID:     id,
 		Title:  book.Title,
 		Author: book.Author,
 		Price:  price,
@@ -46,20 +40,14 @@ func (r *BookRepository) CreateBook(ctx context.Context, book domain.Book) (*dom
 		logger.Error("failed to create book in database", err, map[string]interface{}{
 			"book_id": book.ID,
 		})
-		return nil, err
+		return "", err
 	}
 
 	logger.Info("book created successfully", map[string]interface{}{
 		"book_id": created.ID.String(),
 	})
 
-	return &domain.Book{
-		ID:        created.ID.String(),
-		Title:     created.Title,
-		Author:    created.Author,
-		Price:     created.Price.Int.String(),
-		CreatedAt: created.CreatedAt.Time,
-	}, nil
+	return created.ID.String(), nil
 }
 
 func (r *BookRepository) GetBookByID(ctx context.Context, id string) (*domain.Book, error) {

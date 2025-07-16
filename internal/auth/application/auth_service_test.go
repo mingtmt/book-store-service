@@ -21,12 +21,12 @@ type MockAuthRepo struct {
 	mock.Mock
 }
 
-func (m *MockAuthRepo) RegisterUser(ctx context.Context, user *domain.Auth) (*domain.Auth, error) {
+func (m *MockAuthRepo) RegisterUser(ctx context.Context, user *domain.Auth) (string, error) {
 	args := m.Called(user)
-	if createdUser, ok := args.Get(0).(*domain.Auth); ok {
-		return createdUser, args.Error(1)
+	if userID, ok := args.Get(0).(string); ok {
+		return userID, args.Error(1)
 	}
-	return nil, args.Error(1)
+	return "", args.Error(1)
 }
 
 func (m *MockAuthRepo) FindByUsername(ctx context.Context, username string) (*domain.Auth, error) {
@@ -73,27 +73,37 @@ func TestRegisterUser_Success(t *testing.T) {
 	mockRepo := new(MockAuthRepo)
 	service := NewAuthService(mockRepo)
 
-	validID := uuid.New().String()
+	validUUID := uuid.New()
+	validID := validUUID.String()
 
 	mockRepo.On("FindByUsername", "testuser").Return(nil, errors.ErrUserNotFound)
-	mockRepo.On("RegisterUser", mock.AnythingOfType("*domain.Auth")).Return(&domain.Auth{
-		ID:       validID,
-		Username: "testuser",
-	}, nil)
+
+	var registeredUser *domain.Auth
+	mockRepo.On("RegisterUser", mock.MatchedBy(func(u *domain.Auth) bool {
+		registeredUser = u
+		return u.Username == "testuser" && u.ID != "" && u.Password != ""
+	})).Return(validID, nil)
+
 	mockRepo.On("CreateRefreshToken",
 		mock.Anything,
-		mock.AnythingOfType("uuid.UUID"),
+		validUUID,
 		mock.AnythingOfType("string"),
 		mock.AnythingOfType("time.Time"),
 	).Return(nil)
 
-	user, accessToken, refreshToken, err := service.RegisterUser(context.Background(), "testuser", "testpassword")
+	userID, accessToken, refreshToken, err := service.RegisterUser(context.Background(), "testuser", "testpassword")
 
 	assert.NoError(t, err)
-	assert.Equal(t, "testuser", user.Username)
-	assert.Equal(t, validID, user.ID)
+	assert.Equal(t, validID, userID)
 	assert.NotEmpty(t, accessToken)
 	assert.NotEmpty(t, refreshToken)
+	require.NotNil(t, registeredUser)
+	assert.Equal(t, "testuser", registeredUser.Username)
+	assert.NotEqual(t, "testpassword", registeredUser.Password)
+
+	// Password should match bcrypt hash
+	err = bcrypt.CompareHashAndPassword([]byte(registeredUser.Password), []byte("testpassword"))
+	assert.NoError(t, err)
 
 	mockRepo.AssertExpectations(t)
 }
@@ -105,12 +115,12 @@ func TestRegisterUser_UserAlreadyExists(t *testing.T) {
 
 	mockRepo.On("FindByUsername", "testuser").Return(existingUser, nil)
 
-	user, accessToken, refreshToken, err := service.RegisterUser(
+	userID, accessToken, refreshToken, err := service.RegisterUser(
 		context.Background(), "testuser", "testpassword",
 	)
 
 	assert.Error(t, err)
-	assert.Nil(t, user)
+	assert.Empty(t, userID)
 	assert.Empty(t, accessToken)
 	assert.Empty(t, refreshToken)
 	mockRepo.AssertNotCalled(t, "RegisterUser", mock.Anything)
@@ -123,10 +133,10 @@ func TestRegisterUser_WithError(t *testing.T) {
 
 	mockRepo.On("FindByUsername", "testuser").Return(nil, errors.ErrInternal)
 
-	user, accessToken, refreshToken, err := service.RegisterUser(context.Background(), "testuser", "testpassword")
+	userID, accessToken, refreshToken, err := service.RegisterUser(context.Background(), "testuser", "testpassword")
 
 	assert.Error(t, err)
-	assert.Nil(t, user)
+	assert.Empty(t, userID)
 	assert.Empty(t, accessToken)
 	assert.Empty(t, refreshToken)
 	mockRepo.AssertNotCalled(t, "RegisterUser", mock.Anything)
