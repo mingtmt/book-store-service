@@ -115,12 +115,12 @@ func TestRegisterUser_UserAlreadyExists(t *testing.T) {
 
 	mockRepo.On("FindByUsername", "testuser").Return(existingUser, nil)
 
-	user, accessToken, refreshToken, err := service.RegisterUser(
+	userID, accessToken, refreshToken, err := service.RegisterUser(
 		context.Background(), "testuser", "testpassword",
 	)
 
 	assert.Error(t, err)
-	assert.Nil(t, user)
+	assert.Empty(t, userID)
 	assert.Empty(t, accessToken)
 	assert.Empty(t, refreshToken)
 	mockRepo.AssertNotCalled(t, "RegisterUser", mock.Anything)
