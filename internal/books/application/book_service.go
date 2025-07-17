@@ -6,19 +6,11 @@ import (
 	"github.com/mingtmt/book-store/internal/books/domain"
 )
 
-type BookRepository interface {
-	CreateBook(ctx context.Context, book domain.Book) (string, error)
-	GetBookByID(ctx context.Context, id string) (*domain.Book, error)
-	GetAllBooks(ctx context.Context) ([]domain.Book, error)
-	UpdateBook(ctx context.Context, book domain.Book) (*domain.Book, error)
-	DeleteBookByID(ctx context.Context, id string) error
-}
-
 type BookService struct {
-	repo BookRepository
+	repo domain.BookRepository
 }
 
-func NewBookService(repo BookRepository) *BookService {
+func NewBookService(repo domain.BookRepository) *BookService {
 	return &BookService{repo: repo}
 }
 

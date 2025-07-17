@@ -1,6 +1,6 @@
 package domain
 
-import "time"
+import "context"
 
 type Auth struct {
 	ID       string
@@ -8,11 +8,7 @@ type Auth struct {
 	Password string
 }
 
-type RefreshToken struct {
-	ID        string
-	UserID    string
-	Token     string
-	ExpiresAt time.Time
-	Revoked   bool
-	CreatedAt time.Time
+type AuthRepository interface {
+	RegisterUser(ctx context.Context, user *Auth) (string, error)
+	FindByUsername(ctx context.Context, username string) (*Auth, error)
 }

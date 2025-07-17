@@ -11,24 +11,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type AuthRepository interface {
-	RegisterUser(ctx context.Context, user *domain.Auth) (string, error)
-	FindByUsername(ctx context.Context, username string) (*domain.Auth, error)
-}
-
-type RefreshTokenRepository interface {
-	CreateRefreshToken(ctx context.Context, userID uuid.UUID, token string, expiresAt time.Time) error
-	GetRefreshToken(ctx context.Context, tokenStr string) (*domain.RefreshToken, error)
-	RevokeRefreshToken(ctx context.Context, tokenStr string) error
-	DeleteExpiredRefreshTokens(ctx context.Context) error
-}
-
 type AuthService struct {
-	authRepo    AuthRepository
-	rfTokenRepo RefreshTokenRepository
+	authRepo    domain.AuthRepository
+	rfTokenRepo domain.RefreshTokenRepository
 }
 
-func NewAuthService(authRepo AuthRepository, rfTokenRepo RefreshTokenRepository) *AuthService {
+func NewAuthService(authRepo domain.AuthRepository, rfTokenRepo domain.RefreshTokenRepository) *AuthService {
 	return &AuthService{
 		authRepo:    authRepo,
 		rfTokenRepo: rfTokenRepo,
