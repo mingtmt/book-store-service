@@ -14,6 +14,9 @@ import (
 type AuthRepository interface {
 	RegisterUser(ctx context.Context, user *domain.Auth) (string, error)
 	FindByUsername(ctx context.Context, username string) (*domain.Auth, error)
+}
+
+type RefreshTokenRepository interface {
 	CreateRefreshToken(ctx context.Context, userID uuid.UUID, token string, expiresAt time.Time) error
 	GetRefreshToken(ctx context.Context, tokenStr string) (*domain.RefreshToken, error)
 	RevokeRefreshToken(ctx context.Context, tokenStr string) error
@@ -21,15 +24,19 @@ type AuthRepository interface {
 }
 
 type AuthService struct {
-	repo AuthRepository
+	authRepo    AuthRepository
+	rfTokenRepo RefreshTokenRepository
 }
 
-func NewAuthService(repo AuthRepository) *AuthService {
-	return &AuthService{repo: repo}
+func NewAuthService(authRepo AuthRepository, rfTokenRepo RefreshTokenRepository) *AuthService {
+	return &AuthService{
+		authRepo:    authRepo,
+		rfTokenRepo: rfTokenRepo,
+	}
 }
 
 func (s *AuthService) RegisterUser(ctx context.Context, username, password string) (string, string, string, error) {
-	existing, err := s.repo.FindByUsername(ctx, username)
+	existing, err := s.authRepo.FindByUsername(ctx, username)
 	if err != nil && err != errors.ErrUserNotFound {
 		return "", "", "", err
 	}
@@ -48,7 +55,7 @@ func (s *AuthService) RegisterUser(ctx context.Context, username, password strin
 		Password: string(hashed),
 	}
 
-	userID, err := s.repo.RegisterUser(ctx, user)
+	userID, err := s.authRepo.RegisterUser(ctx, user)
 	if err != nil {
 		return "", "", "", err
 	}
@@ -59,7 +66,7 @@ func (s *AuthService) RegisterUser(ctx context.Context, username, password strin
 		return "", "", "", err
 	}
 
-	err = s.repo.CreateRefreshToken(ctx, uuid.MustParse(userID), refreshToken, refreshExp)
+	err = s.rfTokenRepo.CreateRefreshToken(ctx, uuid.MustParse(userID), refreshToken, refreshExp)
 	if err != nil {
 		return "", "", "", err
 	}
@@ -68,7 +75,7 @@ func (s *AuthService) RegisterUser(ctx context.Context, username, password strin
 }
 
 func (s *AuthService) LoginUser(ctx context.Context, username, password string) (string, string, error) {
-	user, err := s.repo.FindByUsername(ctx, username)
+	user, err := s.authRepo.FindByUsername(ctx, username)
 	if err != nil {
 		return "", "", err
 	}
@@ -87,17 +94,17 @@ func (s *AuthService) LoginUser(ctx context.Context, username, password string) 
 	if err != nil {
 		return "", "", err
 	}
-	if err = s.repo.CreateRefreshToken(ctx, userUUID, refreshToken, expiresAt); err != nil {
+	if err = s.rfTokenRepo.CreateRefreshToken(ctx, userUUID, refreshToken, expiresAt); err != nil {
 		return "", "", err
 	}
-	if err := s.repo.DeleteExpiredRefreshTokens(ctx); err != nil {
+	if err := s.rfTokenRepo.DeleteExpiredRefreshTokens(ctx); err != nil {
 		return "", "", err
 	}
 	return accessToken, refreshToken, nil
 }
 
 func (s *AuthService) RefreshToken(ctx context.Context, tokenStr string) (string, string, error) {
-	rt, err := s.repo.GetRefreshToken(ctx, tokenStr)
+	rt, err := s.rfTokenRepo.GetRefreshToken(ctx, tokenStr)
 	if err != nil {
 		return "", "", err
 	}
@@ -106,7 +113,7 @@ func (s *AuthService) RefreshToken(ctx context.Context, tokenStr string) (string
 	}
 
 	// Revoke old token
-	_ = s.repo.RevokeRefreshToken(ctx, tokenStr)
+	_ = s.rfTokenRepo.RevokeRefreshToken(ctx, tokenStr)
 
 	// Generate new token pair
 	access, refresh, refreshExp, err := token.GenerateTokenPair(rt.UserID)
@@ -119,7 +126,7 @@ func (s *AuthService) RefreshToken(ctx context.Context, tokenStr string) (string
 	if err != nil {
 		return "", "", err
 	}
-	err = s.repo.CreateRefreshToken(ctx, userUUID, refresh, refreshExp)
+	err = s.rfTokenRepo.CreateRefreshToken(ctx, userUUID, refresh, refreshExp)
 	if err != nil {
 		return "", "", err
 	}
@@ -128,5 +135,5 @@ func (s *AuthService) RefreshToken(ctx context.Context, tokenStr string) (string
 }
 
 func (s *AuthService) LogoutUser(ctx context.Context, tokenStr string) error {
-	return s.repo.RevokeRefreshToken(ctx, tokenStr)
+	return s.rfTokenRepo.RevokeRefreshToken(ctx, tokenStr)
 }
