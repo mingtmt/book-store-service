@@ -1,7 +1,10 @@
 package app
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"github.com/mingtmt/book-store/configs"
 	"github.com/mingtmt/book-store/internal/routes"
 )
@@ -11,20 +14,23 @@ type Module interface {
 }
 
 type Application struct {
-	config *configs.Config
-	router *gin.Engine
+	config  *configs.Config
+	router  *gin.Engine
+	modules []Module
 }
 
 func NewApplication(cfg *configs.Config) *Application {
 	r := gin.Default()
+	loadEnv()
 	modules := []Module{
 		NewUserModule(),
 	}
 	routes.RegisterRoutes(r, getModuleRoutes(modules)...)
 
 	return &Application{
-		config: cfg,
-		router: r,
+		config:  cfg,
+		router:  r,
+		modules: modules,
 	}
 }
 
@@ -39,4 +45,11 @@ func getModuleRoutes(modules []Module) []routes.Route {
 	}
 
 	return routeList
+}
+
+func loadEnv() {
+	if err := godotenv.Load(); err != nil {
+		log.Printf("Error loading .env file: %v", err)
+	}
+
 }
