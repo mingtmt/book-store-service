@@ -68,5 +68,7 @@ func RateLimiterMiddleware() gin.HandlerFunc {
 			ctx.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{"error": "Too Many Requests"})
 			return
 		}
+
+		ctx.Next()
 	}
 }
