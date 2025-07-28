@@ -1,6 +1,8 @@
 package service
 
 import (
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/mingtmt/book-store/internal/model"
 	"github.com/mingtmt/book-store/internal/repository"
@@ -18,13 +20,38 @@ func NewUserService(repo repository.UserRepository) UserService {
 	}
 }
 
-func (us *userService) GetAllUsers() ([]model.User, error) {
+func (us *userService) GetAllUsers(search string, page, limit int) ([]model.User, error) {
 	users, err := us.repo.FindAll()
 	if err != nil {
 		return nil, utils.WrapError(utils.ErrCodeInternal, "Failed to fetch users", err)
 	}
 
-	return users, nil
+	var filterUsers []model.User
+	if search != "" {
+		search = strings.ToLower(search)
+		for _, user := range users {
+			name := strings.ToLower(user.Name)
+			email := strings.ToLower(user.Email)
+
+			if strings.Contains(name, search) || strings.Contains(email, search) {
+				filterUsers = append(filterUsers, user)
+			}
+		}
+	} else {
+		filterUsers = users
+	}
+
+	start := (page - 1) * limit
+	if start >= len(filterUsers) {
+		return []model.User{}, nil
+	}
+
+	end := start + limit
+	if end > len(filterUsers) {
+		end = len(filterUsers)
+	}
+
+	return filterUsers[start:end], nil
 }
 
 func (us *userService) CreateUser(user model.User) (model.User, error) {
