@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/mingtmt/book-store/internal/utils"
 )
 
 func RegisterCustomValidation(v *validator.Validate) {
@@ -58,5 +59,38 @@ func RegisterCustomValidation(v *validator.Validate) {
 		}
 
 		return false
+	})
+
+	var blockedDomains = map[string]bool{
+		"blacklist.com": true,
+		"edu.com":       true,
+		"gov.com":       true,
+	}
+	v.RegisterValidation("email_advanced", func(fl validator.FieldLevel) bool {
+		email := fl.Field().String()
+
+		parts := strings.Split(email, "@")
+		if len(parts) != 2 {
+			return false
+		}
+
+		domain := utils.NormalizeString(parts[1])
+
+		return !blockedDomains[domain]
+	})
+
+	v.RegisterValidation("password_strong", func(fl validator.FieldLevel) bool {
+		password := fl.Field().String()
+
+		if len(password) < 8 {
+			return false
+		}
+
+		hasLower := regexp.MustCompile(`[a-z]`).MatchString(password)
+		hasUpper := regexp.MustCompile(`[A-Z]`).MatchString(password)
+		hasDigit := regexp.MustCompile(`[0-9]`).MatchString(password)
+		hasSymbol := regexp.MustCompile(`[!@#$\$%\^&\*\(\)\_\+\-=\[\]\{\};:'",.<>?/\\|]`).MatchString(password)
+
+		return hasLower && hasUpper && hasDigit && hasSymbol
 	})
 }
