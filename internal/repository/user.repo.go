@@ -20,8 +20,9 @@ func (ur *InMemUserRepository) FindAll() {
 	log.Println("Finding all users in memory repository")
 }
 
-func (ur *InMemUserRepository) Create() {
-
+func (ur *InMemUserRepository) Create(user model.User) error {
+	ur.users = append(ur.users, user)
+	return nil
 }
 
 func (ur *InMemUserRepository) FindByUUID() {
@@ -34,4 +35,14 @@ func (ur *InMemUserRepository) Update() {
 
 func (ur *InMemUserRepository) Delete() {
 
+}
+
+func (ur *InMemUserRepository) FindByEmail(email string) (model.User, bool) {
+	for _, user := range ur.users {
+		if user.Email == email {
+			return user, true
+		}
+	}
+
+	return model.User{}, false
 }
