@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"log"
-
 	"github.com/mingtmt/book-store/internal/model"
 )
 
@@ -16,8 +14,8 @@ func NewInMemUserRepository() UserRepository {
 	}
 }
 
-func (ur *InMemUserRepository) FindAll() {
-	log.Println("Finding all users in memory repository")
+func (ur *InMemUserRepository) FindAll() ([]model.User, error) {
+	return ur.users, nil
 }
 
 func (ur *InMemUserRepository) Create(user model.User) error {
