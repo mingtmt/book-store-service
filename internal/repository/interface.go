@@ -5,7 +5,7 @@ import "github.com/mingtmt/book-store/internal/model"
 type UserRepository interface {
 	FindAll() ([]model.User, error)
 	Create(user model.User) error
-	FindByUUID()
+	FindByUUID(uuid string) (model.User, bool)
 	Update()
 	Delete()
 	FindByEmail(email string) (model.User, bool)
