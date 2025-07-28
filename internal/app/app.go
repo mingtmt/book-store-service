@@ -7,6 +7,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/mingtmt/book-store/configs"
 	"github.com/mingtmt/book-store/internal/routes"
+	"github.com/mingtmt/book-store/internal/utils/validation"
 )
 
 type Module interface {
@@ -20,8 +21,10 @@ type Application struct {
 }
 
 func NewApplication(cfg *configs.Config) *Application {
-	r := gin.Default()
+	validation.InitValidator()
 	loadEnv()
+
+	r := gin.Default()
 	modules := []Module{
 		NewUserModule(),
 	}

@@ -25,7 +25,7 @@ func (w *CustomResponseWriter) Write(data []byte) (n int, err error) {
 }
 
 func LoggerMiddleware() gin.HandlerFunc {
-	logPath := "./internal/logs/http.log"
+	logPath := "logs/http.log"
 
 	logger := zerolog.New(&lumberjack.Logger{
 		Filename:   logPath,
