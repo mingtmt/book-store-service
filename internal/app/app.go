@@ -48,7 +48,6 @@ func getModuleRoutes(modules []Module) []routes.Route {
 	for i, module := range modules {
 		routeList[i] = module.Routes()
 	}
-
 	return routeList
 }
 

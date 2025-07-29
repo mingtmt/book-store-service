@@ -8,7 +8,7 @@ import (
 )
 
 type UserModule struct {
-	routes routes.Route
+	BaseModule
 }
 
 func NewUserModule() *UserModule {
@@ -18,10 +18,8 @@ func NewUserModule() *UserModule {
 	userRoutes := routes.NewUserRoutes(userHandler)
 
 	return &UserModule{
-		routes: userRoutes,
+		BaseModule: BaseModule{
+			routes: userRoutes,
+		},
 	}
-}
-
-func (um *UserModule) Routes() routes.Route {
-	return um.routes
 }
