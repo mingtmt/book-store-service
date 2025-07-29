@@ -2,6 +2,7 @@ package repository
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/mingtmt/book-store/internal/model"
 )
@@ -46,8 +47,15 @@ func (ur *InMemUserRepository) Update(uuid string, user model.User) error {
 	return fmt.Errorf("User not found")
 }
 
-func (ur *InMemUserRepository) Delete() {
+func (ur *InMemUserRepository) Delete(uuid string) error {
+	for i, u := range ur.users {
+		if u.UUID == uuid {
+			ur.users = slices.Delete(ur.users, i, i+1)
+			return nil
+		}
+	}
 
+	return fmt.Errorf("User not found")
 }
 
 func (ur *InMemUserRepository) FindByEmail(email string) (model.User, bool) {
