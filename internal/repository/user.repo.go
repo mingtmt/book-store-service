@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	"github.com/mingtmt/book-store/internal/model"
 )
 
@@ -33,8 +35,15 @@ func (ur *InMemUserRepository) FindByUUID(uuid string) (model.User, bool) {
 	return model.User{}, false
 }
 
-func (ur *InMemUserRepository) Update() {
+func (ur *InMemUserRepository) Update(uuid string, user model.User) error {
+	for i, u := range ur.users {
+		if u.UUID == uuid {
+			ur.users[i] = user
+			return nil
+		}
+	}
 
+	return fmt.Errorf("User not found")
 }
 
 func (ur *InMemUserRepository) Delete() {

@@ -5,7 +5,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mingtmt/book-store/internal/dto"
-	"github.com/mingtmt/book-store/internal/model"
 	"github.com/mingtmt/book-store/internal/service"
 	"github.com/mingtmt/book-store/internal/utils"
 	"github.com/mingtmt/book-store/internal/utils/validation"
@@ -57,11 +56,13 @@ func (uh *UserHandler) GetAllUsers(ctx *gin.Context) {
 }
 
 func (uh *UserHandler) CreateUser(ctx *gin.Context) {
-	var user model.User
-	if err := ctx.ShouldBindJSON(&user); err != nil {
+	var input dto.CreateUserInput
+	if err := ctx.ShouldBindJSON(&input); err != nil {
 		utils.ResponseValidator(ctx, validation.HandleValidationErrors(err))
 		return
 	}
+
+	user := input.MapCreateInputToModel()
 
 	createdUser, err := uh.service.CreateUser(user)
 	if err != nil {
@@ -78,6 +79,7 @@ func (uh *UserHandler) GetUserByUUID(ctx *gin.Context) {
 	var params GetUserByUUIDParam
 	if err := ctx.ShouldBindUri(&params); err != nil {
 		utils.ResponseValidator(ctx, validation.HandleValidationErrors(err))
+		return
 	}
 
 	user, err := uh.service.GetUserByUUID(params.UUID)
@@ -92,7 +94,29 @@ func (uh *UserHandler) GetUserByUUID(ctx *gin.Context) {
 }
 
 func (uh *UserHandler) UpdateUser(ctx *gin.Context) {
+	var params GetUserByUUIDParam
+	if err := ctx.ShouldBindUri(&params); err != nil {
+		utils.ResponseValidator(ctx, validation.HandleValidationErrors(err))
+		return
+	}
 
+	var input dto.UpdateUserInput
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		utils.ResponseValidator(ctx, validation.HandleValidationErrors(err))
+		return
+	}
+
+	user := input.MapUpdateInputToModel()
+
+	updatedUser, err := uh.service.UpdateUser(params.UUID, user)
+	if err != nil {
+		utils.ResponseError(ctx, err)
+		return
+	}
+
+	userDTO := dto.MapUserToDTO(updatedUser)
+
+	utils.ResponseSuccess(ctx, http.StatusOK, &userDTO)
 }
 
 func (uh *UserHandler) DeleteUser(ctx *gin.Context) {

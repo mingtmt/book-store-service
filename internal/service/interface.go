@@ -6,6 +6,6 @@ type UserService interface {
 	GetAllUsers(search string, page, limit int) ([]model.User, error)
 	CreateUser(user model.User) (model.User, error)
 	GetUserByUUID(uuid string) (model.User, error)
-	UpdateUser()
+	UpdateUser(uuid string, user model.User) (model.User, error)
 	DeleteUser()
 }
