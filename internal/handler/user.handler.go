@@ -8,6 +8,7 @@ import (
 	"github.com/mingtmt/book-store/internal/service"
 	"github.com/mingtmt/book-store/internal/utils"
 	"github.com/mingtmt/book-store/internal/utils/validation"
+	"github.com/mingtmt/book-store/pkg/response"
 )
 
 type UserHandler struct {
@@ -52,7 +53,7 @@ func (uh *UserHandler) GetAllUsers(ctx *gin.Context) {
 
 	usersDTO := dto.MapUsersToDTO(users)
 
-	utils.ResponseSuccess(ctx, http.StatusOK, usersDTO)
+	response.Success(ctx, usersDTO)
 }
 
 func (uh *UserHandler) CreateUser(ctx *gin.Context) {
@@ -72,7 +73,7 @@ func (uh *UserHandler) CreateUser(ctx *gin.Context) {
 
 	userDTO := dto.MapUserToDTO(createdUser)
 
-	utils.ResponseSuccess(ctx, http.StatusCreated, &userDTO)
+	response.Success(ctx, userDTO)
 }
 
 func (uh *UserHandler) GetUserByUUID(ctx *gin.Context) {
@@ -116,7 +117,7 @@ func (uh *UserHandler) UpdateUser(ctx *gin.Context) {
 
 	userDTO := dto.MapUserToDTO(updatedUser)
 
-	utils.ResponseSuccess(ctx, http.StatusOK, &userDTO)
+	response.Success(ctx, userDTO)
 }
 
 func (uh *UserHandler) DeleteUser(ctx *gin.Context) {
@@ -131,5 +132,5 @@ func (uh *UserHandler) DeleteUser(ctx *gin.Context) {
 		return
 	}
 
-	utils.ResponseStatusCode(ctx, http.StatusNoContent)
+	response.Success(ctx, nil)
 }
