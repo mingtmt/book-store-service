@@ -17,8 +17,8 @@ class RegisterUserUseCase:
 
         hashed = pwd_context.hash(password)
 
-        new_user = User(id=0, email=email, hashed_password=hashed)
+        new_user = User(id=None, email=email, hashed_password=hashed)
         saved = self.user_repo.create(new_user)
 
-        token = create_access_token({"user_id": saved.id}) if self.issue_token else None
+        token = create_access_token({"user_id": str(saved.id)}) if self.issue_token else None
         return saved, token

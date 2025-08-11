@@ -1,7 +1,8 @@
+import uuid
 from sqlalchemy.orm import Session
 from app.domain.repos.user_repo import UserRepository
 from app.domain.models.user import User
-from app.infrastructure.db.sqlalchemy.models.user_model import UserModel  # SQLAlchemy table model
+from app.infrastructure.db.sqlalchemy.models.user_model import UserModel
 
 class SqlAlchemyUserRepository(UserRepository):
     def __init__(self, db: Session):
@@ -14,7 +15,10 @@ class SqlAlchemyUserRepository(UserRepository):
         return None
 
     def create(self, user: User) -> User:
-        db_user = UserModel(email=user.email, hashed_password=user.hashed_password)
+        db_user = UserModel(
+            email=user.email,
+            hashed_password=user.hashed_password
+        )
         self.db.add(db_user)
         self.db.commit()
         self.db.refresh(db_user)

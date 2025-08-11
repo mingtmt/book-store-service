@@ -12,4 +12,4 @@ class LoginUserUseCase:
         user = self.user_repo.get_by_email(email)
         if not user or not pwd_context.verify(password, user.hashed_password):
             raise ValueError("Invalid credentials")
-        return create_access_token({"user_id": user.id})
+        return create_access_token({"user_id": str(user.id)})
