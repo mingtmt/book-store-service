@@ -2,6 +2,7 @@ from passlib.context import CryptContext
 from app.domain.repos.user_repo import UserRepository
 from app.domain.models.user import User
 from app.infrastructure.services.jwt_service import create_access_token
+from app.core.exceptions import EmailAlreadyExistsException
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -11,9 +12,8 @@ class RegisterUserUseCase:
         self.issue_token = issue_token
 
     def execute(self, email: str, password: str) -> tuple[User, str | None]:
-        exist = self.user_repo.get_by_email(email)
-        if exist:
-            raise ValueError("EMAIL_ALREADY_EXISTS")
+        if self.user_repo.get_by_email(email):
+            raise EmailAlreadyExistsException()
 
         hashed = pwd_context.hash(password)
 

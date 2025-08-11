@@ -1,8 +1,9 @@
-import uuid
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from app.domain.repos.user_repo import UserRepository
 from app.domain.models.user import User
 from app.infrastructure.db.sqlalchemy.models.user_model import UserModel
+from app.core.exceptions import EmailAlreadyExistsException
 
 class SqlAlchemyUserRepository(UserRepository):
     def __init__(self, db: Session):
@@ -20,6 +21,10 @@ class SqlAlchemyUserRepository(UserRepository):
             hashed_password=user.hashed_password
         )
         self.db.add(db_user)
-        self.db.commit()
+        try:
+            self.db.commit()
+        except IntegrityError:
+            self.db.rollback()
+            raise EmailAlreadyExistsException()
         self.db.refresh(db_user)
         return User(id=db_user.id, email=db_user.email, hashed_password=db_user.hashed_password)
