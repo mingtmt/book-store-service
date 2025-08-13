@@ -8,6 +8,9 @@ from fastapi import status
 from app.api.v1.routes import api_router
 from app.infrastructure.web.middlewares.error_handler import ErrorHandlerMiddleware
 from app.infrastructure.web.middlewares.logger import LoggingMiddleware
+from app.core.logging_config import setup_logging
+
+setup_logging()
 
 app = FastAPI(
 	title="Book Store Service",

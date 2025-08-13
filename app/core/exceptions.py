@@ -14,6 +14,10 @@ class NotFoundException(AppException):
     code = "NOT_FOUND"
     message = "Resource not found"
 
+class UserNotFoundException(NotFoundException):
+    code = "USER_NOT_FOUND"
+    message = "User not found"
+
 class UnauthorizedException(AppException):
     status_code = 401
     code = "UNAUTHORIZED"
