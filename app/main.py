@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from fastapi import status
 from app.api.v1.routes import api_router
 from app.infrastructure.web.middlewares.error_handler import ErrorHandlerMiddleware
+from app.infrastructure.web.middlewares.logger import LoggingMiddleware
 
 app = FastAPI(
 	title="Book Store Service",
@@ -15,6 +16,7 @@ app = FastAPI(
 )
 
 # Register middlewares
+app.add_middleware(LoggingMiddleware)
 app.add_middleware(ErrorHandlerMiddleware)
 app.add_middleware(
 	CORSMiddleware,
