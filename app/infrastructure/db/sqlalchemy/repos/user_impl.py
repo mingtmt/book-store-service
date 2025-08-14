@@ -1,32 +1,30 @@
 import uuid
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from app.domain.repos.user_repo import IUserRepository
 from app.domain.models.user import User
 from app.infrastructure.db.sqlalchemy.models.user_model import UserModel
 from app.core.exceptions import EmailAlreadyExistsException
+from app.utils.helper import normalize_email
 
 class SqlAlchemyUserRepository(IUserRepository):
     def __init__(self, db: Session):
         self.db = db
 
     def get_by_email(self, email: str) -> User | None:
-        db_user = self.db.query(UserModel).filter(UserModel.email == email).first()
-        if db_user:
-            return User(id=db_user.id, email=db_user.email, hashed_password=db_user.hashed_password)
-        return None
+        normalized = normalize_email(email)
+        db_user = self.db.query(UserModel).filter(func.lower(UserModel.email) == normalized).first()
+        return User(id=db_user.id, email=db_user.email, hashed_password=db_user.hashed_password) if db_user else None
 
     def create(self, user: User) -> User:
-        db_user = UserModel(
-            email=user.email,
-            hashed_password=user.hashed_password
-        )
+        db_user = UserModel(email=user.email, hashed_password=user.hashed_password)
         self.db.add(db_user)
         try:
             self.db.commit()
-        except IntegrityError:
+        except IntegrityError as e:
             self.db.rollback()
-            raise EmailAlreadyExistsException()
+            raise EmailAlreadyExistsException() from e
         self.db.refresh(db_user)
         return User(id=db_user.id, email=db_user.email, hashed_password=db_user.hashed_password)
     

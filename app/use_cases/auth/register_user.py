@@ -2,7 +2,7 @@ from passlib.context import CryptContext
 from app.domain.repos.user_repo import IUserRepository
 from app.domain.models.user import User
 from app.domain.services.token_service import ITokenService
-from app.core.exceptions import EmailAlreadyExistsException
+from app.utils.helper import normalize_email
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -13,12 +13,10 @@ class RegisterUserUseCase:
         self.issue_token = issue_token
 
     def execute(self, email: str, password: str) -> tuple[User, str | None]:
-        if self.user_repo.get_by_email(email):
-            raise EmailAlreadyExistsException()
-
+        normalized_email = normalize_email(email)
         hashed = pwd_context.hash(password)
 
-        new_user = User(id=None, email=email, hashed_password=hashed)
+        new_user = User(id=None, email=normalized_email, hashed_password=hashed)
         saved = self.user_repo.create(new_user)
 
         token = self.token_service.create_access_token(str(saved.id)) if self.issue_token else None
