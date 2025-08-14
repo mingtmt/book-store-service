@@ -1,12 +1,12 @@
 import uuid
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from app.domain.repos.user_repo import UserRepository
+from app.domain.repos.user_repo import IUserRepository
 from app.domain.models.user import User
 from app.infrastructure.db.sqlalchemy.models.user_model import UserModel
 from app.core.exceptions import EmailAlreadyExistsException
 
-class SqlAlchemyUserRepository(UserRepository):
+class SqlAlchemyUserRepository(IUserRepository):
     def __init__(self, db: Session):
         self.db = db
 

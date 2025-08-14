@@ -2,7 +2,7 @@ import uuid
 from abc import ABC, abstractmethod
 from app.domain.models.user import User
 
-class UserRepository(ABC):
+class IUserRepository(ABC):
     @abstractmethod
     def get_by_email(self, email: str) -> User | None:
         pass
