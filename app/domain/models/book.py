@@ -1,4 +1,5 @@
 import uuid
+from decimal import Decimal
 from dataclasses import dataclass
 from typing import Optional
 
@@ -7,7 +8,7 @@ class Book:
     id: Optional[uuid.UUID]
     title: str
     author: str
-    price: str
-    description: str
+    price: Decimal
+    description: str | None
     # cover_image: str
     category: str
