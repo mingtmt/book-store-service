@@ -3,7 +3,7 @@ from app.schemas.base import Envelope
 from app.schemas.auth import LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, UserOut
 from app.use_cases.auth.login_user import LoginUserUseCase
 from app.use_cases.auth.register_user import RegisterUserUseCase
-from app.infrastructure.db.sqlalchemy.user_impl import SqlAlchemyUserRepository
+from app.infrastructure.db.sqlalchemy.repos.user_impl import SqlAlchemyUserRepository
 from sqlalchemy.orm import Session
 from app.infrastructure.web.dependencies.db import get_db
 from app.infrastructure.services.token_service_impl import JWTTokenService

@@ -4,7 +4,7 @@ from app.schemas.base import Envelope
 from app.schemas.users import UpdateRequest, UpdateResponse
 from app.use_cases.users.delete_user import DeleteUserUseCase
 from app.use_cases.users.update_user import UpdateUserUseCase
-from app.infrastructure.db.sqlalchemy.user_impl import SqlAlchemyUserRepository
+from app.infrastructure.db.sqlalchemy.repos.user_impl import SqlAlchemyUserRepository
 from sqlalchemy.orm import Session
 from app.infrastructure.web.dependencies.db import get_db
 
