@@ -5,10 +5,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi import status
-from app.api.v1.routes import api_router
-from app.infrastructure.web.middlewares.error_handler import ErrorHandlerMiddleware
-from app.infrastructure.web.middlewares.logger import LoggingMiddleware
-from app.core.logging_config import setup_logging
+from app.presentation.http.api.v1.routes import api_router
+from app.presentation.http.middlewares.error_handler import ErrorHandlingMiddleware
+from app.presentation.http.middlewares.logger import LoggingMiddleware
+from app.bootstrap.logging_config import setup_logging
 
 setup_logging()
 
@@ -20,7 +20,7 @@ app = FastAPI(
 
 # Register middlewares
 app.add_middleware(LoggingMiddleware)
-app.add_middleware(ErrorHandlerMiddleware)
+app.add_middleware(ErrorHandlingMiddleware)
 app.add_middleware(
 	CORSMiddleware,
 	allow_origins=["*"],

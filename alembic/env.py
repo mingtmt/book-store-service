@@ -23,7 +23,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from sqlalchemy import engine_from_config, pool
-from app.core.database import Base
+from app.infrastructure.db.session import Base
 from app.infrastructure.db.sqlalchemy.models import user_model, book_model
 
 target_metadata = Base.metadata

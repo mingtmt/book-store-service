@@ -2,7 +2,7 @@ import uuid
 from sqlalchemy import String, Index, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
-from app.core.database import Base
+from app.infrastructure.db.session import Base
 
 class UserModel(Base):
     __tablename__ = "users"
@@ -14,6 +14,7 @@ class UserModel(Base):
         nullable=False,
     )
 
+    name: Mapped[str] = mapped_column(String(100), nullable=True)
     email: Mapped[str] = mapped_column(String(320), nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
 

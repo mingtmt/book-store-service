@@ -4,7 +4,7 @@ from typing import Optional
 from sqlalchemy import String, Numeric, Text, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
-from app.core.database import Base
+from app.infrastructure.db.session import Base
 
 class BookModel(Base):
     __tablename__ = "books"
