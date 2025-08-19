@@ -1,23 +1,23 @@
 import uuid
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
-from app.domain.entities.book import Book
 from app.presentation.http.schemas.base import Envelope
-from app.presentation.http.schemas.books import CreateBookRequest, UpdateBookRequest, BookOut
+from app.presentation.http.schemas.books import CreateBook, UpdateBook, BookOut
 from app.usecases.books.create_book import CreateBookUseCase
 from app.usecases.books.get_book import GetAllBooksUseCase, GetBookByIdUseCase
-from app.usecases.books.update_book import UpdateBookUseCase
+from app.usecases.books.update_book import UpdateBookUseCase, UpdateBookCommand
 from app.usecases.books.delete_book import DeleteBookUseCase
 from app.infrastructure.db.sqlalchemy.repositories.book_impl import SqlAlchemyBookRepository
+from app.domain.errors import BookNotFound, ConstraintViolation
 from app.presentation.http.dependencies.db import get_db
 
 router = APIRouter()
 
 @router.post("/", response_model=Envelope[BookOut], status_code=status.HTTP_201_CREATED)
-def create(data: CreateBookRequest, db: Session = Depends(get_db)):
+def create(payload: CreateBook, db: Session = Depends(get_db)):
     repo = SqlAlchemyBookRepository(db)
     uc = CreateBookUseCase(repo)
-    created_book = uc.execute(data.title, data.author, data.price, data.description, data.category)
+    created_book = uc.execute(payload.title, payload.author, payload.price, payload.description, payload.category)
     return Envelope(
         data=BookOut(
             id=created_book.id,
@@ -69,10 +69,17 @@ def get_all(db: Session = Depends(get_db)):
     )
 
 @router.put("/{book_id}", response_model=Envelope[BookOut], status_code=status.HTTP_200_OK)
-def update(book_id: uuid.UUID, payload: UpdateBookRequest, db: Session = Depends(get_db)):
+def update(book_id: uuid.UUID, payload: UpdateBook, db: Session = Depends(get_db)):
     repo = SqlAlchemyBookRepository(db)
     uc = UpdateBookUseCase(repo)
-    updated_book = uc.execute(book_id,payload)
+    cmd = UpdateBookCommand(**payload.model_dump(exclude_unset=True))
+
+    try:
+        updated_book = uc.execute(book_id, cmd)
+    except BookNotFound:
+        raise HTTPException(status_code=404, detail="Book not found")
+    except ConstraintViolation as e:
+        raise HTTPException(status_code=400, detail=str(e))
     return Envelope(
         data=BookOut(
             id=updated_book.id,

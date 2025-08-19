@@ -3,14 +3,14 @@ from decimal import Decimal
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional
 
-class CreateBookRequest(BaseModel):
+class CreateBook(BaseModel):
     title: str
     author: str
     price: Decimal
     description: str | None = None
     category: str
 
-class UpdateBookRequest(BaseModel):
+class UpdateBook(BaseModel):
     title: Optional[str] = Field(default=None, min_length=1)
     author: Optional[str] = Field(default=None, min_length=1)
     price: Optional[Decimal] = Field(default=None, gt=0)

@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 from app.domain.repositories.book_repo import IBookRepository
 from app.domain.entities.book import Book
 from app.infrastructure.db.sqlalchemy.models.book_model import BookModel
-from app.presentation.http.schemas.books import UpdateBookRequest
+from app.presentation.http.schemas.books import UpdateBook
+from app.domain.errors import ConstraintViolation
 from fastapi import HTTPException
 
 class SqlAlchemyBookRepository(IBookRepository):
@@ -64,36 +65,33 @@ class SqlAlchemyBookRepository(IBookRepository):
             description=db_book.description,
             category=db_book.category,
         )
+    
+    def save(self, book: Book) -> Book:
+        db_book = self.db.query(BookModel).filter(BookModel.id == book.id).first()
+        is_new = db_book is None
+        if is_new:
+            db_book = BookModel()
 
-    def update(self, book_id: uuid.UUID, payload: UpdateBookRequest) -> Book:
-        db_book = self.db.query(BookModel).filter(BookModel.id == book_id).first()
-        if not db_book:
-            raise HTTPException(status_code=404, detail="Book not found")
+        db_book.title = book.title
+        db_book.author = book.author
+        db_book.price = book.price
+        db_book.description = book.description
+        db_book.category = book.category
 
-        update_data = payload.model_dump(exclude_unset=True)
-
-        if not update_data:
-            raise HTTPException(status_code=400, detail="No fields provided to update")
-
-        update_data.pop("id", None)
-
-        for key, value in update_data.items():
-            setattr(db_book, key, value)
+        if is_new:
+            self.db.add(db_book)
 
         try:
             self.db.commit()
             self.db.refresh(db_book)
         except IntegrityError as e:
             self.db.rollback()
-            raise HTTPException(status_code=400, detail="Invalid data or constraint violation") from e
+            raise ConstraintViolation("DB constraint violated") from e
 
         return Book(
-            id=db_book.id,
-            title=db_book.title,
-            author=db_book.author,
-            price=db_book.price,
-            description=db_book.description,
-            category=db_book.category,
+            id=db_book.id, title=db_book.title, author=db_book.author,
+            price=db_book.price, description=db_book.description,
+            category=db_book.category
         )
 
     def delete(self, id: uuid.UUID) -> bool:
