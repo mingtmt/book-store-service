@@ -1,103 +1,58 @@
 import uuid
+from sqlalchemy import select, delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from app.domain.repositories.book_repo import IBookRepository
 from app.domain.entities.book import Book
-from app.infrastructure.db.sqlalchemy.models.book_model import BookModel
-from app.presentation.http.schemas.books import UpdateBook
+from app.domain.repositories.book_repo import IBookRepository
 from app.domain.errors import ConstraintViolation
-from fastapi import HTTPException
+from app.infrastructure.db.sqlalchemy.models.book_model import BookModel
+from app.infrastructure.db.sqlalchemy.mappers.orm_mapper import (
+    domain_to_orm, orm_to_domain, apply_domain_to_orm
+)
 
 class SqlAlchemyBookRepository(IBookRepository):
     def __init__(self, db: Session):
         self.db = db
 
     def get_by_id(self, id: uuid.UUID) -> Book | None:
-        db_book = self.db.query(BookModel).filter(BookModel.id == id).first()
-        if db_book:
-            return Book(
-                id=db_book.id,
-                title=db_book.title,
-                author=db_book.author,
-                price=db_book.price,
-                description=db_book.description,
-                category=db_book.category,
-            )
-        return None
+        stmt = select(BookModel).where(BookModel.id == id)
+        m = self.db.execute(stmt).scalars().first()
+        return orm_to_domain(m, Book) if m else None
 
     def get_all(self) -> list[Book] | None:
-        db_books = self.db.query(BookModel).all()
-        if not db_books:
-            return None
-        return [
-            Book(
-                id=db_book.id,
-                title=db_book.title,
-                author=db_book.author,
-                price=db_book.price,
-                description=db_book.description,
-                category=db_book.category,
-            )
-            for db_book in db_books
-        ]
+        rows = self.db.execute(select(BookModel)).scalars().all()
+        return [orm_to_domain(r, Book) for r in rows] if rows else None
 
     def create(self, book: Book) -> Book:
-        db_book = BookModel(
-            title=book.title,
-            author=book.author,
-            price=book.price,
-            description=book.description,
-            category=book.category,
-        )
-        self.db.add(db_book)
+        m = domain_to_orm(book, BookModel)
+        self.db.add(m)
         try:
             self.db.commit()
-            self.db.refresh(db_book)
+            self.db.refresh(m)
         except IntegrityError as e:
             self.db.rollback()
-            raise HTTPException(status_code=409, detail="Book already exists") from e
-
-        return Book(
-            id=db_book.id,
-            title=db_book.title,
-            author=db_book.author,
-            price=db_book.price,
-            description=db_book.description,
-            category=db_book.category,
-        )
+            # translate DB -> domain error (để middleware map 409)
+            raise ConstraintViolation("Book violates a DB constraint") from e
+        return orm_to_domain(m, Book)
     
     def save(self, book: Book) -> Book:
-        db_book = self.db.query(BookModel).filter(BookModel.id == book.id).first()
-        is_new = db_book is None
+        m = self.db.get(BookModel, book.id)
+        is_new = m is None
         if is_new:
-            db_book = BookModel()
-
-        db_book.title = book.title
-        db_book.author = book.author
-        db_book.price = book.price
-        db_book.description = book.description
-        db_book.category = book.category
-
-        if is_new:
-            self.db.add(db_book)
+            m = domain_to_orm(book, BookModel, include_id=False)
+            self.db.add(m)
+        else:
+            apply_domain_to_orm(m, book)
 
         try:
             self.db.commit()
-            self.db.refresh(db_book)
+            self.db.refresh(m)
         except IntegrityError as e:
             self.db.rollback()
-            raise ConstraintViolation("DB constraint violated") from e
-
-        return Book(
-            id=db_book.id, title=db_book.title, author=db_book.author,
-            price=db_book.price, description=db_book.description,
-            category=db_book.category
-        )
+            raise ConstraintViolation("Book violates a DB constraint") from e
+        return orm_to_domain(m, Book)
 
     def delete(self, id: uuid.UUID) -> bool:
-        db_book = self.db.query(BookModel).filter(BookModel.id == id).first()
-        if db_book:
-            self.db.delete(db_book)
-            self.db.commit()
-            return True
-        return False
+        result = self.db.execute(delete(BookModel).where(BookModel.id == id))
+        self.db.commit()
+        return bool(getattr(result, "rowcount", 0))

@@ -25,3 +25,7 @@ class BookOut(BaseModel):
     price: Decimal
     description: Optional[str]
     category: str
+
+    @classmethod
+    def from_domain(cls, book) -> "BookOut":
+        return cls.model_validate(book)
