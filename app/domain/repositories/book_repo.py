@@ -1,6 +1,7 @@
 import uuid
 from abc import ABC, abstractmethod
 from app.domain.entities.book import Book
+from app.presentation.http.schemas.books import UpdateBookRequest
 
 class IBookRepository(ABC):
     @abstractmethod
@@ -16,7 +17,7 @@ class IBookRepository(ABC):
         pass
 
     @abstractmethod
-    def update(self, book: Book) -> Book:
+    def update(self, book_id: uuid.UUID, payload: UpdateBookRequest) -> Book:
         pass
 
     @abstractmethod

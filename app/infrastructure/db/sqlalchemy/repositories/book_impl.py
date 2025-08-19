@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.domain.repositories.book_repo import IBookRepository
 from app.domain.entities.book import Book
 from app.infrastructure.db.sqlalchemy.models.book_model import BookModel
+from app.presentation.http.schemas.books import UpdateBookRequest
 from fastapi import HTTPException
 
 class SqlAlchemyBookRepository(IBookRepository):
@@ -64,8 +65,36 @@ class SqlAlchemyBookRepository(IBookRepository):
             category=db_book.category,
         )
 
-    def update(self, book: Book) -> Book:
-        pass
+    def update(self, book_id: uuid.UUID, payload: UpdateBookRequest) -> Book:
+        db_book = self.db.query(BookModel).filter(BookModel.id == book_id).first()
+        if not db_book:
+            raise HTTPException(status_code=404, detail="Book not found")
+
+        update_data = payload.model_dump(exclude_unset=True)
+
+        if not update_data:
+            raise HTTPException(status_code=400, detail="No fields provided to update")
+
+        update_data.pop("id", None)
+
+        for key, value in update_data.items():
+            setattr(db_book, key, value)
+
+        try:
+            self.db.commit()
+            self.db.refresh(db_book)
+        except IntegrityError as e:
+            self.db.rollback()
+            raise HTTPException(status_code=400, detail="Invalid data or constraint violation") from e
+
+        return Book(
+            id=db_book.id,
+            title=db_book.title,
+            author=db_book.author,
+            price=db_book.price,
+            description=db_book.description,
+            category=db_book.category,
+        )
 
     def delete(self, id: uuid.UUID) -> bool:
         db_book = self.db.query(BookModel).filter(BookModel.id == id).first()
