@@ -15,8 +15,7 @@ class SqlAlchemyBookRepository(IBookRepository):
         self.db = db
 
     def get_by_id(self, id: uuid.UUID) -> Book | None:
-        stmt = select(BookModel).where(BookModel.id == id)
-        m = self.db.execute(stmt).scalars().first()
+        m = self.db.get(BookModel, id)
         return orm_to_domain(m, Book) if m else None
 
     def get_all(self) -> list[Book] | None:
@@ -31,8 +30,7 @@ class SqlAlchemyBookRepository(IBookRepository):
             self.db.refresh(m)
         except IntegrityError as e:
             self.db.rollback()
-            # translate DB -> domain error (để middleware map 409)
-            raise ConstraintViolation("Book violates a DB constraint") from e
+            raise ConstraintViolation(cause=e)
         return orm_to_domain(m, Book)
     
     def save(self, book: Book) -> Book:
@@ -49,7 +47,7 @@ class SqlAlchemyBookRepository(IBookRepository):
             self.db.refresh(m)
         except IntegrityError as e:
             self.db.rollback()
-            raise ConstraintViolation("Book violates a DB constraint") from e
+            raise ConstraintViolation(cause=e)
         return orm_to_domain(m, Book)
 
     def delete(self, id: uuid.UUID) -> bool:

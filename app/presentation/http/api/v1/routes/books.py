@@ -25,8 +25,6 @@ def get_by_id(book_id: uuid.UUID, db: Session = Depends(get_db)):
     repo = SqlAlchemyBookRepository(db)
     uc = GetBookByIdUseCase(repo)
     book = uc.execute(book_id)
-    if book is None:
-        return Envelope(data=None, message="Book not found", status_code=status.HTTP_404_NOT_FOUND)
     return Envelope(data=BookOut.model_validate(book))
 
 @router.get("/", response_model=Envelope[list[BookOut]], status_code=status.HTTP_200_OK)
@@ -35,7 +33,7 @@ def get_all(db: Session = Depends(get_db)):
     uc = GetAllBooksUseCase(repo)
     books = uc.execute()
     if books is None:
-        return Envelope(data=None, message="No books found", status_code=status.HTTP_404_NOT_FOUND)
+        raise BookNotFound(context={"message": "No books found"})
     return Envelope(
         data=[
             BookOut.model_validate(book)
