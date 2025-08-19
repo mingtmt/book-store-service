@@ -5,6 +5,7 @@ from app.presentation.http.schemas.base import Envelope
 from app.presentation.http.schemas.books import CreateBookRequest, CreateBookResponse, GetBookResponse
 from app.usecases.books.create_book import CreateBookUseCase
 from app.usecases.books.get_book import GetAllBooksUseCase, GetBookByIdUseCase
+from app.usecases.books.delete_book import DeleteBookUseCase
 from app.infrastructure.db.sqlalchemy.repositories.book_impl import SqlAlchemyBookRepository
 from app.presentation.http.dependencies.db import get_db
 
@@ -64,3 +65,10 @@ def get_all(db: Session = Depends(get_db)):
             for book in books
         ]
     )
+
+@router.delete("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete(book_id: uuid.UUID, db: Session = Depends(get_db)):
+    repo = SqlAlchemyBookRepository(db)
+    uc = DeleteBookUseCase(repo)
+    uc.execute(book_id)
+    return

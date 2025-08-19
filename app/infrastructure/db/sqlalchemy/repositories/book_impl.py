@@ -68,4 +68,9 @@ class SqlAlchemyBookRepository(IBookRepository):
         pass
 
     def delete(self, id: uuid.UUID) -> bool:
-        pass
+        db_book = self.db.query(BookModel).filter(BookModel.id == id).first()
+        if db_book:
+            self.db.delete(db_book)
+            self.db.commit()
+            return True
+        return False
