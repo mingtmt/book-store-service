@@ -8,7 +8,7 @@ class IBookRepository(ABC):
         pass
 
     @abstractmethod
-    def get_all(self) -> list[Book]:
+    def get_all(self) -> list[Book] | None:
         pass
 
     @abstractmethod

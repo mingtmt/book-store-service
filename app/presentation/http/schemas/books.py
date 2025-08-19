@@ -16,3 +16,11 @@ class CreateBookResponse(BaseModel):
     price: Decimal
     description: str | None = None
     category: str
+
+class GetBookResponse(BaseModel):
+    id: uuid.UUID
+    title: str
+    author: str
+    price: Decimal
+    description: str | None = None
+    category: str
