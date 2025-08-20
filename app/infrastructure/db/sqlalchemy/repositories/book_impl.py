@@ -1,10 +1,16 @@
 import uuid
-from sqlalchemy import select
+from sqlalchemy import select, update as sa_update, func as sa_func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.exc import StaleDataError
+
 from app.domain.entities.book import Book
 from app.domain.repositories.book_repo import IBookRepository
-from app.domain.errors import BookNotFound, ConstraintViolation
+from app.domain.errors import (
+    BookNotFound,
+    ConstraintViolation,
+    ConflictError,
+)
 from app.infrastructure.db.sqlalchemy.models.book_model import BookModel
 from app.infrastructure.db.sqlalchemy.mappers.orm_mapper import (
     domain_to_orm, orm_to_domain, apply_domain_to_orm
@@ -15,11 +21,22 @@ class SqlAlchemyBookRepository(IBookRepository):
         self.db = db
 
     def get_by_id(self, id: uuid.UUID) -> Book | None:
-        m = self.db.get(BookModel, id)
+        m = (
+            self.db.execute(
+                select(BookModel).where(
+                    BookModel.id == id,
+                    BookModel.deleted_at.is_(None)
+                )
+            ).scalars().first()
+        )
         return orm_to_domain(m, Book) if m else None
 
     def get_all(self) -> list[Book]:
-        rows = self.db.execute(select(BookModel)).scalars().all()
+        rows = (
+            self.db.execute(
+                select(BookModel).where(BookModel.deleted_at.is_(None))
+            ).scalars().all()
+        )
         return [orm_to_domain(r, Book) for r in rows]
 
     def create(self, book: Book) -> Book:
@@ -31,7 +48,11 @@ class SqlAlchemyBookRepository(IBookRepository):
         except IntegrityError as e:
             self.db.rollback()
             msg = str(getattr(e, "orig", e))
-            if "uq_books_title_author_ci" in msg or "uq_books_title_author" in msg:
+            if (
+                "uq_books_title_author_ci_active" in msg
+                or "uq_books_title_author_ci" in msg
+                or "uq_books_title_author" in msg
+            ):
                 raise ConstraintViolation("Title & author must be unique", cause=e)
             if "ck_books_price_nonnegative" in msg:
                 raise ConstraintViolation("Price must be non-negative", cause=e)
@@ -39,7 +60,14 @@ class SqlAlchemyBookRepository(IBookRepository):
         return orm_to_domain(m, Book)
     
     def save(self, book: Book) -> Book:
-        m = self.db.get(BookModel, book.id)
+        m = (
+            self.db.execute(
+                select(BookModel).where(
+                    BookModel.id == book.id,
+                    BookModel.deleted_at.is_(None),
+                )
+            ).scalars().first()
+        )
         if m is None:
             raise BookNotFound(context={"book_id": str(book.id)})
 
@@ -47,15 +75,28 @@ class SqlAlchemyBookRepository(IBookRepository):
         try:
             self.db.commit()
             self.db.refresh(m)
+        except StaleDataError as e:
+            self.db.rollback()
+            raise ConflictError("Version conflict (stale update)", cause=e)
         except IntegrityError as e:
             self.db.rollback()
+            msg = str(getattr(e, "orig", e))
+            if (
+                "uq_books_title_author_ci_active" in msg
+                or "uq_books_title_author_ci" in msg
+                or "uq_books_title_author" in msg
+            ):
+                raise ConstraintViolation("Title & author must be unique", cause=e)
+            if "ck_books_price_nonnegative" in msg:
+                raise ConstraintViolation("Price must be non-negative", cause=e)
             raise ConstraintViolation("DB constraint violated", cause=e)
         return orm_to_domain(m, Book)
 
     def delete(self, id: uuid.UUID) -> bool:
-        obj = self.db.get(BookModel, id)
-        if not obj:
-            return False
-        self.db.delete(obj)
+        res = self.db.execute(
+            sa_update(BookModel)
+            .where(BookModel.id == id, BookModel.deleted_at.is_(None))
+            .values(deleted_at=sa_func.now())
+        )
         self.db.commit()
-        return True
+        return bool(getattr(res, "rowcount", 0))

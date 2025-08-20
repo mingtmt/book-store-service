@@ -2,15 +2,15 @@ from __future__ import annotations
 import uuid
 from decimal import Decimal
 from typing import Optional
-
 from sqlalchemy import (
-    String, Numeric, Text, Index, UniqueConstraint, CheckConstraint, func
+    String, Numeric, Text, Index, CheckConstraint, func, text
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from app.infrastructure.db.session import Base
+from app.infrastructure.db.sqlalchemy.mixins import TimestampMixin, SoftDeleteMixin, OptimisticLockMixin
 
-class BookModel(Base):
+class BookModel(TimestampMixin, SoftDeleteMixin, OptimisticLockMixin, Base):
     __tablename__ = "books"
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -24,16 +24,17 @@ class BookModel(Base):
 
     __table_args__ = (
         Index(
-            "uq_books_title_author_ci",
+            "uq_books_title_author_ci_active",
             func.lower(title),
             func.lower(author),
             unique=True,
+            postgresql_where=text("deleted_at IS NULL"),
         ),
-
         CheckConstraint("price >= 0", name="ck_books_price_nonnegative"),
-
         Index("ix_books_title", "title"),
         Index("ix_books_author", "author"),
+        Index("ix_books_updated_at", "updated_at"),
+        Index("ix_books_category_updated", "category", "updated_at"),
     )
 
     def __repr__(self) -> str:
