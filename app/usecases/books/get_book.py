@@ -7,7 +7,7 @@ class GetAllBooksUseCase:
     def __init__(self, repo: IBookRepository):
         self.repo = repo
 
-    def execute(self) -> list[Book] | None:
+    def execute(self) -> list[Book]:
         return self.repo.get_all()
     
 class GetBookByIdUseCase:

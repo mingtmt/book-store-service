@@ -18,9 +18,9 @@ class SqlAlchemyBookRepository(IBookRepository):
         m = self.db.get(BookModel, id)
         return orm_to_domain(m, Book) if m else None
 
-    def get_all(self) -> list[Book] | None:
+    def get_all(self) -> list[Book]:
         rows = self.db.execute(select(BookModel)).scalars().all()
-        return [orm_to_domain(r, Book) for r in rows] if rows else None
+        return [orm_to_domain(r, Book) for r in rows]
 
     def create(self, book: Book) -> Book:
         m = domain_to_orm(book, BookModel)
@@ -30,7 +30,12 @@ class SqlAlchemyBookRepository(IBookRepository):
             self.db.refresh(m)
         except IntegrityError as e:
             self.db.rollback()
-            raise ConstraintViolation(cause=e)
+            msg = str(getattr(e, "orig", e))
+            if "uq_books_title_author_ci" in msg or "uq_books_title_author" in msg:
+                raise ConstraintViolation("Title & author must be unique", cause=e)
+            if "ck_books_price_nonnegative" in msg:
+                raise ConstraintViolation("Price must be non-negative", cause=e)
+            raise ConstraintViolation("Resource violates data constraints", cause=e)
         return orm_to_domain(m, Book)
     
     def save(self, book: Book) -> Book:

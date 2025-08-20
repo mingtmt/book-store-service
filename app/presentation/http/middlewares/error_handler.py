@@ -6,7 +6,7 @@ from pydantic import ValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.domain.errors import (
-    DomainError, UserNotFound, BookNotFound, EmailAlreadyExists,
+    DomainError, UserNotFound, BookNotFound, EmailAlreadyExists, ConstraintViolation,
     InvalidEmail, PasswordTooWeak, InvalidCredentials,
 )
 from app.usecases.errors import (
@@ -19,6 +19,7 @@ DOMAIN_HTTP_MAP: dict[type[Exception], tuple[int, str]] = {
     UserNotFound: (404, "USER_NOT_FOUND"),
     BookNotFound: (404, "BOOK_NOT_FOUND"),
     EmailAlreadyExists: (409, "EMAIL_ALREADY_EXISTS"),
+    ConstraintViolation: (409, "CONSTRAINT_VIOLATION"),
     InvalidEmail: (400, "INVALID_EMAIL"),
     PasswordTooWeak: (400, "PASSWORD_TOO_WEAK"),
     InvalidCredentials: (401, "INVALID_CREDENTIALS"),

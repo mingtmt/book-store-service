@@ -1,7 +1,11 @@
+from __future__ import annotations
 import uuid
 from decimal import Decimal
 from typing import Optional
-from sqlalchemy import String, Numeric, Text, Index
+
+from sqlalchemy import (
+    String, Numeric, Text, Index, UniqueConstraint, CheckConstraint, func
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from app.infrastructure.db.session import Base
@@ -10,10 +14,7 @@ class BookModel(Base):
     __tablename__ = "books"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-        nullable=False,
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     author: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -22,6 +23,15 @@ class BookModel(Base):
     category: Mapped[str] = mapped_column(String(100), nullable=False)
 
     __table_args__ = (
+        Index(
+            "uq_books_title_author_ci",
+            func.lower(title),
+            func.lower(author),
+            unique=True,
+        ),
+
+        CheckConstraint("price >= 0", name="ck_books_price_nonnegative"),
+
         Index("ix_books_title", "title"),
         Index("ix_books_author", "author"),
     )
