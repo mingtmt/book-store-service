@@ -1,5 +1,5 @@
 import uuid
-from fastapi import APIRouter, Depends, status, HTTPException, Response
+from fastapi import APIRouter, Depends, status, Response
 from sqlalchemy.orm import Session
 from app.presentation.http.schemas.base import Envelope
 from app.presentation.http.schemas.books import CreateBook, UpdateBook, BookOut
@@ -8,7 +8,6 @@ from app.usecases.books.get_book import GetAllBooksUseCase, GetBookByIdUseCase
 from app.usecases.books.update_book import UpdateBookUseCase, UpdateBookCommand
 from app.usecases.books.delete_book import DeleteBookUseCase
 from app.infrastructure.db.sqlalchemy.repositories.book_impl import SqlAlchemyBookRepository
-from app.domain.errors import BookNotFound, ConstraintViolation
 from app.presentation.http.dependencies.db import get_db
 
 router = APIRouter()
