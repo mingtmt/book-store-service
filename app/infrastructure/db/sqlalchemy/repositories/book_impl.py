@@ -53,6 +53,9 @@ class SqlAlchemyBookRepository(IBookRepository):
         return orm_to_domain(m, Book)
 
     def delete(self, id: uuid.UUID) -> bool:
-        result = self.db.execute(delete(BookModel).where(BookModel.id == id))
+        obj = self.db.get(BookModel, id)
+        if not obj:
+            return False
+        self.db.delete(obj)
         self.db.commit()
-        return bool(getattr(result, "rowcount", 0))
+        return True
