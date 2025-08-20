@@ -6,7 +6,7 @@ from app.domain.entities.book import Book
 from app.domain.repositories.book_repo import IBookRepository
 from app.domain.errors import BookNotFound, ConstraintViolation
 
-@dataclass
+@dataclass(frozen=True)
 class UpdateBookCommand:
     title: Optional[str] = None
     author: Optional[str] = None
@@ -21,22 +21,23 @@ class UpdateBookUseCase:
     def execute(self, book_id: uuid.UUID, cmd: UpdateBookCommand) -> Book:
         book = self.repo.get_by_id(book_id)
         if not book:
-            raise BookNotFound()
+            raise BookNotFound(context={"book_id": str(book_id)})
 
-        if cmd.title is not None:
-            book.title = cmd.title
-        if cmd.author is not None:
-            book.author = cmd.author
-        if cmd.price is not None:
-            book.price = cmd.price
-        if cmd.description is not None:
-            book.description = cmd.description
-        if cmd.category is not None:
-            book.category = cmd.category
+        title       = cmd.title.strip() if cmd.title is not None else book.title
+        author      = cmd.author.strip() if cmd.author is not None else book.author
+        description = cmd.description.strip() if cmd.description is not None else book.description
+        category    = cmd.category.strip() if cmd.category is not None else book.category
+        price       = cmd.price if cmd.price is not None else book.price
 
-        if not book.title or not book.author:
+        if not title or not author:
             raise ConstraintViolation("title/author cannot be empty")
-        if book.price <= 0:
+        if price is None or price <= 0:
             raise ConstraintViolation("price must be > 0")
+
+        book.title = title
+        book.author = author
+        book.description = description
+        book.category = category
+        book.price = price
 
         return self.repo.save(book)

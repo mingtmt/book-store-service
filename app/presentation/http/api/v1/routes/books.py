@@ -47,13 +47,7 @@ def update(book_id: uuid.UUID, payload: UpdateBook, db: Session = Depends(get_db
     repo = SqlAlchemyBookRepository(db)
     uc = UpdateBookUseCase(repo)
     cmd = UpdateBookCommand(**payload.model_dump(exclude_unset=True))
-
-    try:
-        updated_book = uc.execute(book_id, cmd)
-    except BookNotFound:
-        raise HTTPException(status_code=404, detail="Book not found")
-    except ConstraintViolation as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    updated_book = uc.execute(book_id, cmd)
     return Envelope(data=BookOut.model_validate(updated_book))
 
 @router.delete("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)

@@ -6,11 +6,11 @@ from pydantic import ValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.domain.errors import (
-    DomainError, UserNotFound, BookNotFound, EmailAlreadyExists, ConstraintViolation,
+    UserNotFound, BookNotFound, EmailAlreadyExists, ConstraintViolation,
     InvalidEmail, PasswordTooWeak, InvalidCredentials,
 )
 from app.usecases.errors import (
-    UseCaseError, NotFound, Unauthorized, BadRequest, Conflict, Forbidden,
+    NotFound, Unauthorized, BadRequest, Conflict, Forbidden,
 )
 
 logger = logging.getLogger(__name__)

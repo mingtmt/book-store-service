@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from app.domain.entities.book import Book
 from app.domain.repositories.book_repo import IBookRepository
-from app.domain.errors import ConstraintViolation
+from app.domain.errors import BookNotFound, ConstraintViolation
 from app.infrastructure.db.sqlalchemy.models.book_model import BookModel
 from app.infrastructure.db.sqlalchemy.mappers.orm_mapper import (
     domain_to_orm, orm_to_domain, apply_domain_to_orm
@@ -40,19 +40,16 @@ class SqlAlchemyBookRepository(IBookRepository):
     
     def save(self, book: Book) -> Book:
         m = self.db.get(BookModel, book.id)
-        is_new = m is None
-        if is_new:
-            m = domain_to_orm(book, BookModel, include_id=False)
-            self.db.add(m)
-        else:
-            apply_domain_to_orm(m, book)
+        if m is None:
+            raise BookNotFound(context={"book_id": str(book.id)})
 
+        apply_domain_to_orm(m, book)
         try:
             self.db.commit()
             self.db.refresh(m)
         except IntegrityError as e:
             self.db.rollback()
-            raise ConstraintViolation(cause=e)
+            raise ConstraintViolation("DB constraint violated", cause=e)
         return orm_to_domain(m, Book)
 
     def delete(self, id: uuid.UUID) -> bool:
