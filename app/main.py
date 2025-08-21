@@ -1,6 +1,4 @@
 from dotenv import load_dotenv
-load_dotenv()
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -10,29 +8,35 @@ from app.presentation.http.middlewares.error_handler import ErrorHandlingMiddlew
 from app.presentation.http.middlewares.logger import LoggingMiddleware
 from app.bootstrap.logging_config import setup_logging
 
-setup_logging()
+def create_app() -> FastAPI:
+    load_dotenv()
+    setup_logging()
 
-app = FastAPI(
-	title="Book Store Service",
-	version="1.0.0",
-	description="Backend service for a book store."
-)
+    app = FastAPI(
+        title="Book Store Service",
+        version="1.0.0",
+        description="Backend service for a book store."
+    )
 
-# Register middlewares
-app.add_middleware(LoggingMiddleware)
-app.add_middleware(ErrorHandlingMiddleware)
-app.add_middleware(
-	CORSMiddleware,
-	allow_origins=["*"],
-	allow_credentials=True,
-	allow_methods=["*"],
-	allow_headers=["*"],
-)
+    # Middlewares
+    app.add_middleware(LoggingMiddleware)
+    app.add_middleware(ErrorHandlingMiddleware)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
-# Health check endpoint
-@app.get("/ping", tags=["Health"])
-async def ping():
-	return JSONResponse(content={"message": "pong"}, status_code=status.HTTP_200_OK)
+    # Routes
+    app.include_router(api_router, prefix="/api/v1")
 
-# Register API routes
-app.include_router(api_router, prefix="/api/v1")
+    @app.get("/ping", tags=["Health"])
+    async def ping():
+        return JSONResponse(content={"message": "pong"}, status_code=status.HTTP_200_OK)
+
+    return app
+
+app = create_app()
+
