@@ -1,0 +1,11 @@
+name: "book-store-service CodeQL config"
+
+paths:
+  - /app
+  - /tests
+
+paths-ignore:
+  - "**/.venv/**"
+  - "**/__pycache__/**"
+  - "**/.pytest_cache/**"
+  - "/alembic/**"
