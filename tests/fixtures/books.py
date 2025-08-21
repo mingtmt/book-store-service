@@ -1,4 +1,3 @@
-# tests/fixtures/books.py
 import pytest
 import uuid
 from decimal import Decimal
@@ -14,9 +13,9 @@ def _norm(s: Optional[str]) -> Optional[str]:
 
 class InMemoryBookRepo:
     """
-    Fake IBookRepository tối giản, khớp với entity Book hiện tại:
-    field hợp lệ: id, title, author, price, description, category
-    Ràng buộc:
+    Fake IBookRepository
+    Fields: id, title, author, price, description, category
+    Constraints:
       - Unique (title, author) case-insensitive
       - price >= 0
     """
@@ -39,7 +38,7 @@ class InMemoryBookRepo:
             if _norm(b.title) == t and _norm(b.author) == a:
                 raise ConstraintViolation("Title & author must be unique")
 
-    # --- interface methods dùng trong unit test ---
+    # --- interface methods ---
     def get_by_id(self, id: uuid.UUID) -> Optional[Book]:
         return self._data.get(id)
 

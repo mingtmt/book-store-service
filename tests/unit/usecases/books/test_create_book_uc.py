@@ -44,7 +44,7 @@ def test_create_book_trims_fields(fake_book_repo):
     created = uc.execute(cmd)
 
     assert created.title == "DDD Made Simple"
-    assert created.author == "Jane   Doe"      # UC chỉ strip, không normalize khoảng trắng giữa
+    assert created.author == "Jane   Doe"
     assert created.description == "Intro to DDD"
     assert created.category == "software"
 
@@ -62,7 +62,6 @@ def test_create_book_duplicate_title_author_raises(fake_book_repo):
     )
     uc.execute(first)
 
-    # Trùng (title, author) → repo raise ConstraintViolation
     dup = CreateBookCommand(
         title="Domain-Driven Design",
         author="Eric Evans",
@@ -81,7 +80,7 @@ def test_create_book_negative_price_raises_bad_request(fake_book_repo):
     cmd = CreateBookCommand(
         title="Clean Architecture",
         author="Robert C. Martin",
-        price=Decimal("-0.01"),  # UC tự check -> BadRequest
+        price=Decimal("-0.01"),
         description="Uncle Bob",
         category="software",
     )

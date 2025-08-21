@@ -13,7 +13,6 @@ class CreateBookCommand:
     description: Optional[str]
     category: str
 
-
 class CreateBookUseCase:
     def __init__(self, repo: IBookRepository):
         self.repo = repo
