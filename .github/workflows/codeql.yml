@@ -1,0 +1,46 @@
+name: code-scanning
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "book-store-service/**"
+      - ".github/**"
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "book-store-service/**"
+      - ".github/**"
+  schedule:
+    - cron: "0 3 * * 1"   # weekly on Monday
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  analyze:
+    name: CodeQL Analyze (python)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Initialize CodeQL for Python
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          config-file: ./.github/codeql/codeql-config.yml
+
+      # For Python, autobuild is a no-op but keep it; safe for mixed repos
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:python"

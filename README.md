@@ -1,3 +1,7 @@
+[![unit-tests](https://github.com/mingtmt/book-store-service/actions/workflows/tests.yml/badge.svg)](https://github.com/mingtmt/book-store-service/actions/workflows/tests.yml)
+[![CodeQL](https://github.com/mingtmt/book-store-service/actions/workflows/codeql.yml/badge.svg)](https://github.com/mingtmt/book-store-service/actions/workflows/codeql.yml)
+
+
 # Book Store Service
 
 A backend service for a book store, built with FastAPI, SQLAlchemy, and Alembic.
