@@ -62,20 +62,43 @@ A backend service for a book store, built with FastAPI, SQLAlchemy, and Alembic.
 - Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
 - Redoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)
 
+
+
 ## Project Structure
 ```
 app/
-  main.py
-  api/
-  core/
-  domain/
-  infrastructure/
-  schemas/
-  use_cases/
-alembic/
-requirements.txt
-docker-compose.yml
+   main.py
+   bootstrap/
+   domain/
+   infrastructure/
+   ports/
+   presentation/
+   settings/
+   usecases/
+   utils/
 ```
+
+## Useful Commands
+
+- **Run migrations:**
+   ```bash
+   alembic upgrade head
+   ```
+
+- **Generate a new migration:**
+   ```bash
+   alembic revision --autogenerate -m "<migration message>"
+   ```
+
+- **Start the application (dev):**
+   ```bash
+   uvicorn app.main:app --reload
+   ```
+
+- **Run tests:**
+   ```bash
+   pytest
+   ```
 
 ## License
 MIT
