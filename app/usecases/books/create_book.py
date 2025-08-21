@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 from decimal import Decimal
 from typing import Optional
-from app.domain.repositories.book_repo import IBookRepository
+
 from app.domain.entities.book import Book
+from app.domain.repositories.book_repo import IBookRepository
 from app.usecases.errors import BadRequest
+
 
 @dataclass(frozen=True)
 class CreateBookCommand:
@@ -12,6 +14,7 @@ class CreateBookCommand:
     price: Decimal
     description: Optional[str]
     category: str
+
 
 class CreateBookUseCase:
     def __init__(self, repo: IBookRepository):

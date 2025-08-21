@@ -1,7 +1,9 @@
 import uuid
+
 from app.domain.entities.book import Book
-from app.domain.repositories.book_repo import IBookRepository
 from app.domain.errors import BookNotFound
+from app.domain.repositories.book_repo import IBookRepository
+
 
 class GetAllBooksUseCase:
     def __init__(self, repo: IBookRepository):
@@ -9,7 +11,8 @@ class GetAllBooksUseCase:
 
     def execute(self) -> list[Book]:
         return self.repo.get_all()
-    
+
+
 class GetBookByIdUseCase:
     def __init__(self, repo: IBookRepository):
         self.repo = repo

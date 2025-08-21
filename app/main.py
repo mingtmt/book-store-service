@@ -1,12 +1,13 @@
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi import status
+
+from app.bootstrap.logging_config import setup_logging
 from app.presentation.http.api.v1.routes import api_router
 from app.presentation.http.middlewares.error_handler import ErrorHandlingMiddleware
 from app.presentation.http.middlewares.logger import LoggingMiddleware
-from app.bootstrap.logging_config import setup_logging
+
 
 def create_app() -> FastAPI:
     load_dotenv()
@@ -15,7 +16,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="Book Store Service",
         version="1.0.0",
-        description="Backend service for a book store."
+        description="Backend service for a book store.",
     )
 
     # Middlewares
@@ -38,5 +39,5 @@ def create_app() -> FastAPI:
 
     return app
 
-app = create_app()
 
+app = create_app()

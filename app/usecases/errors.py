@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 from typing import Any, Mapping
+
 
 class UseCaseError(Exception):
     code: str = "USECASE_ERROR"

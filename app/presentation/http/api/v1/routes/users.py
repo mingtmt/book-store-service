@@ -1,16 +1,23 @@
 import uuid
+
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
+
+from app.infrastructure.db.sqlalchemy.repositories.user_impl import (
+    SqlAlchemyUserRepository,
+)
+from app.presentation.http.dependencies.db import get_db
 from app.presentation.http.schemas.base import Envelope
 from app.presentation.http.schemas.users import UpdateRequest, UpdateResponse
 from app.usecases.users.delete_user import DeleteUserUseCase
 from app.usecases.users.update_user import UpdateUserUseCase
-from app.infrastructure.db.sqlalchemy.repositories.user_impl import SqlAlchemyUserRepository
-from app.presentation.http.dependencies.db import get_db
 
 router = APIRouter()
 
-@router.put("/", response_model=Envelope[UpdateResponse], status_code=status.HTTP_200_OK)
+
+@router.put(
+    "/", response_model=Envelope[UpdateResponse], status_code=status.HTTP_200_OK
+)
 def update(data: UpdateRequest, db: Session = Depends(get_db)):
     repo = SqlAlchemyUserRepository(db)
     uc = UpdateUserUseCase(repo)

@@ -1,10 +1,12 @@
 import uuid
 from dataclasses import dataclass
-from typing import Optional
 from decimal import Decimal
+from typing import Optional
+
 from app.domain.entities.book import Book
-from app.domain.repositories.book_repo import IBookRepository
 from app.domain.errors import BookNotFound, ConstraintViolation
+from app.domain.repositories.book_repo import IBookRepository
+
 
 @dataclass(frozen=True)
 class UpdateBookCommand:
@@ -13,6 +15,7 @@ class UpdateBookCommand:
     price: Optional[Decimal] = None
     description: Optional[str] = None
     category: Optional[str] = None
+
 
 class UpdateBookUseCase:
     def __init__(self, repo: IBookRepository):
@@ -23,11 +26,13 @@ class UpdateBookUseCase:
         if not book:
             raise BookNotFound(context={"book_id": str(book_id)})
 
-        title       = cmd.title.strip() if cmd.title is not None else book.title
-        author      = cmd.author.strip() if cmd.author is not None else book.author
-        description = cmd.description.strip() if cmd.description is not None else book.description
-        category    = cmd.category.strip() if cmd.category is not None else book.category
-        price       = cmd.price if cmd.price is not None else book.price
+        title = cmd.title.strip() if cmd.title is not None else book.title
+        author = cmd.author.strip() if cmd.author is not None else book.author
+        description = (
+            cmd.description.strip() if cmd.description is not None else book.description
+        )
+        category = cmd.category.strip() if cmd.category is not None else book.category
+        price = cmd.price if cmd.price is not None else book.price
 
         if not title or not author:
             raise ConstraintViolation("title/author cannot be empty")

@@ -1,15 +1,18 @@
-import pytest
 import uuid
 from decimal import Decimal
 from typing import Dict, Optional
 
+import pytest
+
 from app.domain.entities.book import Book
-from app.domain.errors import ConstraintViolation, BookNotFound
+from app.domain.errors import BookNotFound, ConstraintViolation
+
 
 def _norm(s: Optional[str]) -> Optional[str]:
     if s is None:
         return None
     return " ".join(s.split()).lower()
+
 
 class InMemoryBookRepo:
     """
@@ -19,6 +22,7 @@ class InMemoryBookRepo:
       - Unique (title, author) case-insensitive
       - price >= 0
     """
+
     def __init__(self):
         self._data: Dict[uuid.UUID, Book] = {}
 
@@ -29,7 +33,9 @@ class InMemoryBookRepo:
         if Decimal(price) < 0:
             raise ConstraintViolation("Price must be non-negative")
 
-    def _assert_unique_title_author(self, title: str, author: str, exclude_id: Optional[uuid.UUID] = None):
+    def _assert_unique_title_author(
+        self, title: str, author: str, exclude_id: Optional[uuid.UUID] = None
+    ):
         t = _norm(title)
         a = _norm(author)
         for bid, b in self._data.items():
@@ -83,9 +89,11 @@ class InMemoryBookRepo:
         del self._data[id]
         return True
 
+
 @pytest.fixture
 def fake_book_repo():
     return InMemoryBookRepo()
+
 
 @pytest.fixture
 def book_payload():

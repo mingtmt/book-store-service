@@ -1,9 +1,12 @@
 import uuid
+
 from passlib.context import CryptContext
-from app.domain.repositories.user_repo import IUserRepository
+
 from app.domain.entities.user import User
+from app.domain.repositories.user_repo import IUserRepository
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 class UpdateUserUseCase:
     def __init__(self, user_repo: IUserRepository):

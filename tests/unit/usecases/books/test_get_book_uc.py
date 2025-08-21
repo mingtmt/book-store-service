@@ -1,11 +1,12 @@
 import uuid
 from decimal import Decimal
+
 import pytest
 
 from app.domain.entities.book import Book
 from app.domain.errors import BookNotFound
+from app.usecases.books.create_book import CreateBookCommand, CreateBookUseCase
 from app.usecases.books.get_book import GetAllBooksUseCase, GetBookByIdUseCase
-from app.usecases.books.create_book import CreateBookUseCase, CreateBookCommand
 
 
 # ---------- GetBookByIdUseCase ----------

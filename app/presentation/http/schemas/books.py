@@ -1,10 +1,12 @@
 from __future__ import annotations
+
 import re
 import uuid
 from decimal import Decimal
-from typing import Optional, Annotated
 from enum import Enum
-from pydantic import BaseModel, Field, ConfigDict, field_validator, model_validator
+from typing import Annotated, Optional
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class BookCategory(str, Enum):
@@ -18,15 +20,18 @@ Price = Annotated[Decimal, Field(gt=0, max_digits=10, decimal_places=2)]
 
 
 class CreateBook(BaseModel):
-    model_config = ConfigDict(extra="forbid", json_schema_extra={
-        "example": {
-            "title": "Clean Architecture",
-            "author": "Robert C. Martin",
-            "price": "19.99",
-            "description": "Principles of software architecture.",
-            "category": "study",
-        }
-    })
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra={
+            "example": {
+                "title": "Clean Architecture",
+                "author": "Robert C. Martin",
+                "price": "19.99",
+                "description": "Principles of software architecture.",
+                "category": "study",
+            }
+        },
+    )
 
     title: Annotated[str, Field(min_length=1, max_length=255)]
     author: Annotated[str, Field(min_length=1, max_length=255)]
@@ -48,7 +53,9 @@ class UpdateBook(BaseModel):
 
     title: Optional[Annotated[str, Field(min_length=1, max_length=255)]] = None
     author: Optional[Annotated[str, Field(min_length=1, max_length=255)]] = None
-    price: Optional[Annotated[Decimal, Field(gt=0, max_digits=10, decimal_places=2)]] = None
+    price: Optional[
+        Annotated[Decimal, Field(gt=0, max_digits=10, decimal_places=2)]
+    ] = None
     description: Optional[Annotated[str, Field(max_length=10_000)]] = None
     category: Optional[Annotated[str, Field(min_length=1, max_length=100)]] = None
 
@@ -61,7 +68,10 @@ class UpdateBook(BaseModel):
 
     @model_validator(mode="after")
     def _at_least_one_field(self):
-        if all(getattr(self, f) is None for f in ("title", "author", "price", "description", "category")):
+        if all(
+            getattr(self, f) is None
+            for f in ("title", "author", "price", "description", "category")
+        ):
             raise ValueError("At least one field must be provided")
         return self
 

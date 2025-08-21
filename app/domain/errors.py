@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from typing import Any, Mapping
 
 
@@ -34,6 +35,7 @@ class DomainError(Exception):
 
 # ------- Error families ---------
 
+
 class NotFoundError(DomainError):
     code = "NOT_FOUND"
     default_message = "Resource not found"
@@ -55,6 +57,7 @@ class AuthError(DomainError):
 
 
 # ------- Specific domain errors
+
 
 class UserNotFound(NotFoundError):
     code = "USER_NOT_FOUND"

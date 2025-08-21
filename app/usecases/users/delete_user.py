@@ -1,7 +1,8 @@
-
 import uuid
+
 from app.domain.repositories.user_repo import IUserRepository
 from app.usecases.errors import NotFound
+
 
 class DeleteUserUseCase:
     def __init__(self, user_repo: IUserRepository):
