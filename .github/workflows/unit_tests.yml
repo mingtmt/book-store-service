@@ -1,4 +1,4 @@
-name: unit-tests
+name: Unit tests
 
 on:
   push:
@@ -32,10 +32,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # Cài deps nếu có file yêu cầu; an toàn nếu không có
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
-          # Đảm bảo có pytest
           pip install pytest
 
       - name: Run unit tests (-m unit)
