@@ -1,9 +1,11 @@
 from passlib.context import CryptContext
+
 from app.domain.repositories.user_repo import IUserRepository
 from app.ports.token_service import ITokenService
 from app.usecases.errors import Unauthorized
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 class LoginUserUseCase:
     def __init__(self, user_repo: IUserRepository, token_service: ITokenService):

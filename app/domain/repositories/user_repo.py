@@ -1,6 +1,8 @@
 import uuid
 from abc import ABC, abstractmethod
+
 from app.domain.entities.user import User
+
 
 class IUserRepository(ABC):
     @abstractmethod
@@ -18,4 +20,3 @@ class IUserRepository(ABC):
     @abstractmethod
     def delete(self, user_id: uuid.UUID) -> bool:
         pass
-    

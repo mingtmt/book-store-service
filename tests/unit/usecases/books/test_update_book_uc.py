@@ -1,12 +1,13 @@
 # tests/usecases/books/test_update_book_uc.py
 import uuid
 from decimal import Decimal
+
 import pytest
 
 from app.domain.entities.book import Book
 from app.domain.errors import BookNotFound, ConstraintViolation
-from app.usecases.books.create_book import CreateBookUseCase, CreateBookCommand
-from app.usecases.books.update_book import UpdateBookUseCase, UpdateBookCommand
+from app.usecases.books.create_book import CreateBookCommand, CreateBookUseCase
+from app.usecases.books.update_book import UpdateBookCommand, UpdateBookUseCase
 
 
 def seed_book(repo, **overrides) -> Book:
@@ -122,7 +123,9 @@ def test_update_book_non_positive_price_raises(fake_book_repo, bad_price):
 @pytest.mark.unit
 def test_update_book_to_duplicate_title_author_raises(fake_book_repo):
     b1 = seed_book(fake_book_repo, title="Refactoring", author="Martin Fowler")
-    b2 = seed_book(fake_book_repo, title="Patterns of Enterprise", author="Martin Fowler")
+    b2 = seed_book(
+        fake_book_repo, title="Patterns of Enterprise", author="Martin Fowler"
+    )
     uc = UpdateBookUseCase(fake_book_repo)
 
     with pytest.raises(ConstraintViolation):

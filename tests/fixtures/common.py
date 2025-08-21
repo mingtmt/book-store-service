@@ -1,12 +1,16 @@
-import pytest
-from decimal import Decimal
 import uuid
+from decimal import Decimal
+
+import pytest
+
 
 @pytest.fixture
 def money():
     def _m(x) -> Decimal:
         return Decimal(str(x))
+
     return _m
+
 
 @pytest.fixture
 def random_email():

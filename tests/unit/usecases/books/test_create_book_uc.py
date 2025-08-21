@@ -1,10 +1,11 @@
-import pytest
 import uuid
 from decimal import Decimal
 
-from app.usecases.books.create_book import CreateBookUseCase, CreateBookCommand
+import pytest
+
 from app.domain.entities.book import Book
 from app.domain.errors import ConstraintViolation
+from app.usecases.books.create_book import CreateBookCommand, CreateBookUseCase
 from app.usecases.errors import BadRequest
 
 
@@ -15,7 +16,7 @@ def test_create_book_success(fake_book_repo, book_payload):
     cmd = CreateBookCommand(
         title=book_payload["title"],
         author=book_payload["author"],
-        price=book_payload["price"],           # Decimal("19.99")
+        price=book_payload["price"],  # Decimal("19.99")
         description=book_payload["description"],
         category=book_payload["category"],
     )

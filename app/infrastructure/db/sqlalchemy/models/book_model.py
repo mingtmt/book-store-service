@@ -1,14 +1,20 @@
 from __future__ import annotations
+
 import uuid
 from decimal import Decimal
 from typing import Optional
-from sqlalchemy import (
-    String, Numeric, Text, Index, CheckConstraint, func, text
-)
+
+from sqlalchemy import CheckConstraint, Index, Numeric, String, Text, func, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
+
 from app.infrastructure.db.session import Base
-from app.infrastructure.db.sqlalchemy.mixins import TimestampMixin, SoftDeleteMixin, OptimisticLockMixin
+from app.infrastructure.db.sqlalchemy.mixins import (
+    OptimisticLockMixin,
+    SoftDeleteMixin,
+    TimestampMixin,
+)
+
 
 class BookModel(TimestampMixin, SoftDeleteMixin, OptimisticLockMixin, Base):
     __tablename__ = "books"
@@ -18,7 +24,9 @@ class BookModel(TimestampMixin, SoftDeleteMixin, OptimisticLockMixin, Base):
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     author: Mapped[str] = mapped_column(String(255), nullable=False)
-    price: Mapped[Decimal] = mapped_column(Numeric(10, 2, asdecimal=True), nullable=False)
+    price: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2, asdecimal=True), nullable=False
+    )
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     category: Mapped[str] = mapped_column(String(100), nullable=False)
 

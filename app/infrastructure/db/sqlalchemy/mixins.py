@@ -1,8 +1,11 @@
 from __future__ import annotations
-from typing import Optional
+
 from datetime import datetime
-from sqlalchemy.orm import Mapped, mapped_column, declared_attr
-from sqlalchemy import DateTime, Integer, ForeignKey, text
+from typing import Optional
+
+from sqlalchemy import DateTime, ForeignKey, Integer, text
+from sqlalchemy.orm import Mapped, declared_attr, mapped_column
+
 
 class TimestampMixin:
     created_at: Mapped[datetime] = mapped_column(
@@ -17,13 +20,17 @@ class TimestampMixin:
         nullable=False,
     )
 
+
 class SoftDeleteMixin:
     deleted_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), nullable=True, index=True
     )
 
+
 class OptimisticLockMixin:
-    version: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("1"))
+    version: Mapped[int] = mapped_column(
+        Integer, nullable=False, server_default=text("1")
+    )
 
     @declared_attr.directive
     def __mapper_args__(cls):
@@ -31,6 +38,7 @@ class OptimisticLockMixin:
             "version_id_col": cls.version,
             "version_id_generator": True,
         }
+
 
 class AuditByUserMixin:
     created_by: Mapped[Optional[str]] = mapped_column(

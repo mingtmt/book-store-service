@@ -1,6 +1,8 @@
 import uuid
 from abc import ABC, abstractmethod
+
 from app.domain.entities.book import Book
+
 
 class IBookRepository(ABC):
     @abstractmethod

@@ -1,20 +1,22 @@
 import uuid
-from sqlalchemy import select, update as sa_update, func as sa_func
+
+from sqlalchemy import func as sa_func
+from sqlalchemy import select
+from sqlalchemy import update as sa_update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import StaleDataError
 
 from app.domain.entities.book import Book
+from app.domain.errors import BookNotFound, ConflictError, ConstraintViolation
 from app.domain.repositories.book_repo import IBookRepository
-from app.domain.errors import (
-    BookNotFound,
-    ConstraintViolation,
-    ConflictError,
+from app.infrastructure.db.sqlalchemy.mappers.orm_mapper import (
+    apply_domain_to_orm,
+    domain_to_orm,
+    orm_to_domain,
 )
 from app.infrastructure.db.sqlalchemy.models.book_model import BookModel
-from app.infrastructure.db.sqlalchemy.mappers.orm_mapper import (
-    domain_to_orm, orm_to_domain, apply_domain_to_orm
-)
+
 
 class SqlAlchemyBookRepository(IBookRepository):
     def __init__(self, db: Session):
@@ -24,18 +26,19 @@ class SqlAlchemyBookRepository(IBookRepository):
         m = (
             self.db.execute(
                 select(BookModel).where(
-                    BookModel.id == id,
-                    BookModel.deleted_at.is_(None)
+                    BookModel.id == id, BookModel.deleted_at.is_(None)
                 )
-            ).scalars().first()
+            )
+            .scalars()
+            .first()
         )
         return orm_to_domain(m, Book) if m else None
 
     def get_all(self) -> list[Book]:
         rows = (
-            self.db.execute(
-                select(BookModel).where(BookModel.deleted_at.is_(None))
-            ).scalars().all()
+            self.db.execute(select(BookModel).where(BookModel.deleted_at.is_(None)))
+            .scalars()
+            .all()
         )
         return [orm_to_domain(r, Book) for r in rows]
 
@@ -58,7 +61,7 @@ class SqlAlchemyBookRepository(IBookRepository):
                 raise ConstraintViolation("Price must be non-negative", cause=e)
             raise ConstraintViolation("Resource violates data constraints", cause=e)
         return orm_to_domain(m, Book)
-    
+
     def save(self, book: Book) -> Book:
         m = (
             self.db.execute(
@@ -66,7 +69,9 @@ class SqlAlchemyBookRepository(IBookRepository):
                     BookModel.id == book.id,
                     BookModel.deleted_at.is_(None),
                 )
-            ).scalars().first()
+            )
+            .scalars()
+            .first()
         )
         if m is None:
             raise BookNotFound(context={"book_id": str(book.id)})
