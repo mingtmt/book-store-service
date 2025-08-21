@@ -30,14 +30,14 @@ jobs:
 
       - name: Run unit tests with coverage
         env:
-          PYTHONPATH: ${{ github.workspace }}/book-store-service
+          PYTHONPATH: ${{ github.workspace }}
         run: |
           pytest -q -m unit --cov=app --cov-report=xml --cov-report=term-missing
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
-          files: ./book-store-service/coverage.xml   # path from repo root
+          files: ./coverage.xml
           flags: unittests
           fail_ci_if_error: true
         env:
