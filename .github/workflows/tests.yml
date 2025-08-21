@@ -1,4 +1,4 @@
-name: Unit tests
+name: Running tests
 
 on:
   push:
@@ -15,6 +15,7 @@ concurrency:
 
 jobs:
   pytest:
+    name: Unit tests
     runs-on: ubuntu-latest
     strategy:
       matrix:
