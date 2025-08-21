@@ -1,5 +1,6 @@
 [![unit-tests](https://github.com/mingtmt/book-store-service/actions/workflows/tests.yml/badge.svg)](https://github.com/mingtmt/book-store-service/actions/workflows/tests.yml)
 [![CodeQL](https://github.com/mingtmt/book-store-service/actions/workflows/codeql.yml/badge.svg)](https://github.com/mingtmt/book-store-service/actions/workflows/codeql.yml)
+[![codecov](https://codecov.io/gh/mingtmt/book-store-service/branch/main/graph/badge.svg)](https://app.codecov.io/gh/mingtmt/book-store-service)
 
 
 # Book Store Service

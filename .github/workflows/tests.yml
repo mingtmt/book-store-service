@@ -1,3 +1,4 @@
+# .github/workflows/tests.yml
 name: unit-tests
 
 on:
@@ -6,13 +7,6 @@ on:
   pull_request:
     branches: [ "**" ]
 
-permissions:
-  contents: read
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   pytest:
     runs-on: ubuntu-latest
@@ -20,24 +14,31 @@ jobs:
       matrix:
         python-version: [ "3.12" ]
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
 
-      - name: Install dependencies
+      - name: Install deps
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install -U pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
-          pip install pytest
+          pip install pytest pytest-cov
 
-      - name: Run unit tests (-m unit)
+      - name: Run unit tests with coverage
         env:
           PYTHONPATH: ${{ github.workspace }}/book-store-service
         run: |
-          pytest -q -m unit
+          pytest -q -m unit --cov=app --cov-report=xml --cov-report=term-missing
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./book-store-service/coverage.xml   # path from repo root
+          flags: unittests
+          fail_ci_if_error: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
