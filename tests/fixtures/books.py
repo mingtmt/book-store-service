@@ -104,3 +104,14 @@ def book_payload():
         "description": "A hands-on guide",
         "category": "software",
     }
+
+
+@pytest.fixture
+def user_payload():
+    """A default user payload suitable for repo.create(User(**...))."""
+    return {
+        "email": "ada.lovelace@example.com",
+        "name": "Ada Lovelace",
+        "age": 28,
+        "hashed_password": "HASHED",
+    }

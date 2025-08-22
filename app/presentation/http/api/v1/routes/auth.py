@@ -5,6 +5,7 @@ from app.infrastructure.db.sqlalchemy.repositories.user_impl import (
     SqlAlchemyUserRepository,
 )
 from app.infrastructure.services.jwt_token_service import JWTTokenService
+from app.infrastructure.services.password_service import PasswordService
 from app.presentation.http.dependencies.db import get_db
 from app.presentation.http.schemas.auth import (
     LoginRequest,
@@ -27,6 +28,7 @@ router = APIRouter()
 )
 def register(payload: RegisterIn, response: Response, db: Session = Depends(get_db)):
     token_service = JWTTokenService()
+    password_service = PasswordService()
     repo = SqlAlchemyUserRepository(db)
     cmd = RegisterUserCommand(
         email=payload.email,
@@ -34,7 +36,7 @@ def register(payload: RegisterIn, response: Response, db: Session = Depends(get_
         age=payload.age,
         password=payload.password,
     )
-    uc = RegisterUserUseCase(repo, token_service, issue_token=True)
+    uc = RegisterUserUseCase(repo, token_service, password_service, issue_token=True)
     created_user, token = uc.execute(cmd)
     response.headers["Location"] = f"/api/v1/users/{created_user.id}"
     return Envelope(

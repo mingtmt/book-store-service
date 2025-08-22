@@ -1,14 +1,11 @@
 from dataclasses import dataclass
 
-from passlib.context import CryptContext
-
 from app.domain.entities.user import User
 from app.domain.errors import EmailAlreadyExists
 from app.domain.repositories.user_repo import IUserRepository
+from app.ports.password_service import IPasswordService
 from app.ports.token_service import ITokenService
 from app.utils.helper import normalize_email
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 @dataclass(frozen=True)
@@ -24,10 +21,12 @@ class RegisterUserUseCase:
         self,
         user_repo: IUserRepository,
         token_service: ITokenService,
+        password_service: IPasswordService,
         issue_token: bool = True,
     ):
         self.user_repo = user_repo
         self.token_service = token_service
+        self.password_service = password_service
         self.issue_token = issue_token
 
     def execute(self, cmd: RegisterUserCommand) -> tuple[User, str | None]:
@@ -35,7 +34,7 @@ class RegisterUserUseCase:
         if self.user_repo.get_by_email(normalized_email):
             raise EmailAlreadyExists(context={"email": normalized_email})
 
-        hashed = pwd_context.hash(cmd.password)
+        hashed = self.password_service.hash_password(cmd.password)
 
         new_user = User(
             id=None,
