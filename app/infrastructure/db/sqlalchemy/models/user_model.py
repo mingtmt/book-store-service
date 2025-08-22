@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Index, String, func
+from sqlalchemy import Index, Integer, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -17,8 +17,9 @@ class UserModel(Base):
         nullable=False,
     )
 
-    name: Mapped[str] = mapped_column(String(100), nullable=True)
     email: Mapped[str] = mapped_column(String(320), nullable=False)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    age: Mapped[int] = mapped_column(Integer, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
 
     __table_args__ = (Index("uq_users_email_ci", func.lower(email), unique=True),)

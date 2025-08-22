@@ -7,4 +7,6 @@ from typing import Optional
 class User:
     id: Optional[uuid.UUID]
     email: str
+    name: str
+    age: int
     hashed_password: str
