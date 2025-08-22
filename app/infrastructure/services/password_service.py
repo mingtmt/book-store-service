@@ -6,8 +6,8 @@ _ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class PasswordService(IPasswordService):
-    def hash(self, raw: str) -> str:
+    def hash_password(self, raw: str) -> str:
         return _ctx.hash(raw)
 
-    def verify(self, raw: str, hashed: str) -> bool:
+    def verify_password(self, raw: str, hashed: str) -> bool:
         return _ctx.verify(raw, hashed)
