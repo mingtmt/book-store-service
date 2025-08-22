@@ -15,6 +15,19 @@ Age = Annotated[int, Field(ge=0, le=150)]
 Password = Annotated[str, Field(min_length=8, max_length=128)]
 
 
+class UserOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True, extra="ignore")
+
+    id: uuid.UUID
+    email: EmailStr
+    name: str
+    age: int
+
+    @classmethod
+    def from_domain(cls, user) -> "UserOut":
+        return cls.model_validate(user)
+
+
 class RegisterIn(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -51,30 +64,36 @@ class RegisterIn(BaseModel):
         return v
 
 
-class UserOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True, extra="ignore")
-
-    id: uuid.UUID
-    email: EmailStr
-    name: str
-    age: int
-
-    @classmethod
-    def from_domain(cls, user) -> "UserOut":
-        return cls.model_validate(user)
-
-
-class RegisterResponse(BaseModel):
+class RegisterOut(BaseModel):
     user: UserOut
     access_token: str | None = None
     token_type: str | None = "bearer"
 
 
-class LoginRequest(BaseModel):
-    email: str
-    password: str
+class LoginIn(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra={
+            "example": {
+                "email": "ada.lovelace@example.com",
+                "password": "S3cureP@ssw0rd",
+            }
+        },
+    )
+
+    email: EmailStr
+    password: Password
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def _normalize_email(cls, v):
+        if isinstance(v, str):
+            v = v.strip()
+            v = " ".join(v.split())
+            v = v.lower()
+        return v
 
 
-class LoginResponse(BaseModel):
+class LoginOut(BaseModel):
     access_token: str
     token_type: str = "bearer"

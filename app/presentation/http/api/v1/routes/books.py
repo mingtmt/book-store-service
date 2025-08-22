@@ -17,7 +17,11 @@ from app.usecases.books.update_book import UpdateBookCommand, UpdateBookUseCase
 router = APIRouter()
 
 
-@router.post("/", response_model=Envelope[BookOut], status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    response_model=Envelope[BookOut],
+    status_code=status.HTTP_201_CREATED,
+)
 def create(payload: CreateBook, response: Response, db: Session = Depends(get_db)):
     repo = SqlAlchemyBookRepository(db)
     uc = CreateBookUseCase(repo)
@@ -34,7 +38,9 @@ def create(payload: CreateBook, response: Response, db: Session = Depends(get_db
 
 
 @router.get(
-    "/{book_id}", response_model=Envelope[BookOut], status_code=status.HTTP_200_OK
+    "/{book_id}",
+    response_model=Envelope[BookOut],
+    status_code=status.HTTP_200_OK,
 )
 def get_by_id(book_id: uuid.UUID, db: Session = Depends(get_db)):
     repo = SqlAlchemyBookRepository(db)
@@ -43,7 +49,11 @@ def get_by_id(book_id: uuid.UUID, db: Session = Depends(get_db)):
     return Envelope(data=BookOut.model_validate(book))
 
 
-@router.get("/", response_model=Envelope[list[BookOut]], status_code=status.HTTP_200_OK)
+@router.get(
+    "/",
+    response_model=Envelope[list[BookOut]],
+    status_code=status.HTTP_200_OK,
+)
 def get_all(db: Session = Depends(get_db)):
     repo = SqlAlchemyBookRepository(db)
     uc = GetAllBooksUseCase(repo)
@@ -52,7 +62,9 @@ def get_all(db: Session = Depends(get_db)):
 
 
 @router.put(
-    "/{book_id}", response_model=Envelope[BookOut], status_code=status.HTTP_200_OK
+    "/{book_id}",
+    response_model=Envelope[BookOut],
+    status_code=status.HTTP_200_OK,
 )
 def update(book_id: uuid.UUID, payload: UpdateBook, db: Session = Depends(get_db)):
     repo = SqlAlchemyBookRepository(db)
@@ -62,7 +74,10 @@ def update(book_id: uuid.UUID, payload: UpdateBook, db: Session = Depends(get_db
     return Envelope(data=BookOut.model_validate(updated_book))
 
 
-@router.delete("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{book_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
 def delete(book_id: uuid.UUID, db: Session = Depends(get_db)):
     repo = SqlAlchemyBookRepository(db)
     uc = DeleteBookUseCase(repo)
