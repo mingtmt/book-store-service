@@ -6,12 +6,13 @@ from app.infrastructure.db.sqlalchemy.repositories.user_impl import (
 )
 from app.infrastructure.services.jwt_token_service import JWTTokenService
 from app.infrastructure.services.password_service import PasswordService
+from app.presentation.http.dependencies.auth import get_current_user
 from app.presentation.http.dependencies.db import get_db
 from app.presentation.http.schemas.auth import (
-    LoginRequest,
-    LoginResponse,
+    LoginIn,
+    LoginOut,
     RegisterIn,
-    RegisterResponse,
+    RegisterOut,
     UserOut,
 )
 from app.presentation.http.schemas.base import Envelope
@@ -23,7 +24,7 @@ router = APIRouter()
 
 @router.post(
     "/register",
-    response_model=Envelope[RegisterResponse],
+    response_model=Envelope[RegisterOut],
     status_code=status.HTTP_201_CREATED,
 )
 def register(payload: RegisterIn, response: Response, db: Session = Depends(get_db)):
@@ -40,18 +41,28 @@ def register(payload: RegisterIn, response: Response, db: Session = Depends(get_
     created_user, token = uc.execute(cmd)
     response.headers["Location"] = f"/api/v1/users/{created_user.id}"
     return Envelope(
-        data=RegisterResponse(
-            user=UserOut.model_validate(created_user), access_token=token
-        )
+        data=RegisterOut(user=UserOut.model_validate(created_user), access_token=token)
     )
 
 
 @router.post(
-    "/login", response_model=Envelope[LoginResponse], status_code=status.HTTP_200_OK
+    "/login",
+    response_model=Envelope[LoginOut],
+    status_code=status.HTTP_200_OK,
 )
-def login(data: LoginRequest, db: Session = Depends(get_db)):
+def login(payload: LoginIn, db: Session = Depends(get_db)):
     token_service = JWTTokenService()
+    password_service = PasswordService()
     repo = SqlAlchemyUserRepository(db)
-    uc = LoginUserUseCase(repo, token_service=token_service)
-    token = uc.execute(data.email, data.password)
-    return Envelope(data=LoginResponse(access_token=token))
+    uc = LoginUserUseCase(repo, token_service, password_service)
+    token = uc.execute(payload.email, payload.password)
+    return Envelope(data=LoginOut(access_token=token))
+
+
+@router.get(
+    "/me",
+    response_model=Envelope[UserOut],
+    status_code=status.HTTP_200_OK,
+)
+def me(current_user=Depends(get_current_user)):
+    return Envelope(data=UserOut.from_domain(current_user))

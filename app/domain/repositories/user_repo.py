@@ -12,13 +12,10 @@ class IUserRepository(ABC):
     def get_by_id(self, id: uuid.UUID) -> User | None: ...
 
     @abstractmethod
-    def get_by_email(self, email: str) -> User | None:
-        pass
+    def get_by_email(self, email: str) -> User | None: ...
 
     @abstractmethod
-    def update(self, user: User) -> User:
-        pass
+    def update(self, user: User) -> User: ...
 
     @abstractmethod
-    def delete(self, user_id: uuid.UUID) -> bool:
-        pass
+    def delete(self, user_id: uuid.UUID) -> bool: ...

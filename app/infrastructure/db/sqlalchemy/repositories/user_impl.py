@@ -35,7 +35,12 @@ class SqlAlchemyUserRepository(IUserRepository):
         return orm_to_domain(m, User)
 
     def get_by_id(self, id: uuid.UUID) -> User | None:
-        pass
+        m = (
+            self.db.execute(select(UserModel).where(UserModel.id == id))
+            .scalars()
+            .first()
+        )
+        return orm_to_domain(m, User) if m else None
 
     def get_by_email(self, email: str) -> User | None:
         normalized_email = normalize_email(email)
