@@ -6,11 +6,13 @@ from app.domain.entities.user import User
 
 class IUserRepository(ABC):
     @abstractmethod
-    def get_by_email(self, email: str) -> User | None:
-        pass
+    def create(self, user: User) -> User: ...
 
     @abstractmethod
-    def create(self, user: User) -> User:
+    def get_by_id(self, id: uuid.UUID) -> User | None: ...
+
+    @abstractmethod
+    def get_by_email(self, email: str) -> User | None:
         pass
 
     @abstractmethod

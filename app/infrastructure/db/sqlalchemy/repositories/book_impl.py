@@ -22,26 +22,6 @@ class SqlAlchemyBookRepository(IBookRepository):
     def __init__(self, db: Session):
         self.db = db
 
-    def get_by_id(self, id: uuid.UUID) -> Book | None:
-        m = (
-            self.db.execute(
-                select(BookModel).where(
-                    BookModel.id == id, BookModel.deleted_at.is_(None)
-                )
-            )
-            .scalars()
-            .first()
-        )
-        return orm_to_domain(m, Book) if m else None
-
-    def get_all(self) -> list[Book]:
-        rows = (
-            self.db.execute(select(BookModel).where(BookModel.deleted_at.is_(None)))
-            .scalars()
-            .all()
-        )
-        return [orm_to_domain(r, Book) for r in rows]
-
     def create(self, book: Book) -> Book:
         m = domain_to_orm(book, BookModel)
         self.db.add(m)
@@ -61,6 +41,26 @@ class SqlAlchemyBookRepository(IBookRepository):
                 raise ConstraintViolation("Price must be non-negative", cause=e)
             raise ConstraintViolation("Resource violates data constraints", cause=e)
         return orm_to_domain(m, Book)
+
+    def get_by_id(self, id: uuid.UUID) -> Book | None:
+        m = (
+            self.db.execute(
+                select(BookModel).where(
+                    BookModel.id == id, BookModel.deleted_at.is_(None)
+                )
+            )
+            .scalars()
+            .first()
+        )
+        return orm_to_domain(m, Book) if m else None
+
+    def get_all(self) -> list[Book]:
+        rows = (
+            self.db.execute(select(BookModel).where(BookModel.deleted_at.is_(None)))
+            .scalars()
+            .all()
+        )
+        return [orm_to_domain(r, Book) for r in rows]
 
     def save(self, book: Book) -> Book:
         m = (

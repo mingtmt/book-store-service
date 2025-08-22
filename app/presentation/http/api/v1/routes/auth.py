@@ -1,21 +1,22 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
 
 from app.infrastructure.db.sqlalchemy.repositories.user_impl import (
     SqlAlchemyUserRepository,
 )
 from app.infrastructure.services.jwt_token_service import JWTTokenService
+from app.infrastructure.services.password_service import PasswordService
 from app.presentation.http.dependencies.db import get_db
 from app.presentation.http.schemas.auth import (
     LoginRequest,
     LoginResponse,
-    RegisterRequest,
+    RegisterIn,
     RegisterResponse,
     UserOut,
 )
 from app.presentation.http.schemas.base import Envelope
 from app.usecases.auth.login_user import LoginUserUseCase
-from app.usecases.auth.register_user import RegisterUserUseCase
+from app.usecases.auth.register_user import RegisterUserCommand, RegisterUserUseCase
 
 router = APIRouter()
 
@@ -25,14 +26,22 @@ router = APIRouter()
     response_model=Envelope[RegisterResponse],
     status_code=status.HTTP_201_CREATED,
 )
-def register(data: RegisterRequest, db: Session = Depends(get_db)):
+def register(payload: RegisterIn, response: Response, db: Session = Depends(get_db)):
     token_service = JWTTokenService()
+    password_service = PasswordService()
     repo = SqlAlchemyUserRepository(db)
-    uc = RegisterUserUseCase(repo, token_service=token_service, issue_token=True)
-    user, token = uc.execute(data.email, data.password)
+    cmd = RegisterUserCommand(
+        email=payload.email,
+        name=payload.name,
+        age=payload.age,
+        password=payload.password,
+    )
+    uc = RegisterUserUseCase(repo, token_service, password_service, issue_token=True)
+    created_user, token = uc.execute(cmd)
+    response.headers["Location"] = f"/api/v1/users/{created_user.id}"
     return Envelope(
         data=RegisterResponse(
-            user=UserOut(id=user.id, email=user.email), access_token=token
+            user=UserOut.model_validate(created_user), access_token=token
         )
     )
 
