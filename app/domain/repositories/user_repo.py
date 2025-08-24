@@ -15,6 +15,9 @@ class IUserRepository(ABC):
     def get_by_email(self, email: str) -> User | None: ...
 
     @abstractmethod
+    def save(self, user: User) -> User: ...
+
+    @abstractmethod
     def update(self, user: User) -> User: ...
 
     @abstractmethod

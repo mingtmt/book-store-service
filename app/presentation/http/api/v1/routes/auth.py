@@ -13,11 +13,13 @@ from app.presentation.http.schemas.auth import (
     LoginOut,
     RegisterIn,
     RegisterOut,
+    UpdateMeIn,
     UserOut,
 )
 from app.presentation.http.schemas.base import Envelope
 from app.usecases.auth.login_user import LoginUserUseCase
 from app.usecases.auth.register_user import RegisterUserCommand, RegisterUserUseCase
+from app.usecases.auth.update_profile import UpdateProfileCmd, UpdateProfileUseCase
 
 router = APIRouter()
 
@@ -66,3 +68,19 @@ def login(payload: LoginIn, db: Session = Depends(get_db)):
 )
 def me(current_user=Depends(get_current_user)):
     return Envelope(data=UserOut.from_domain(current_user))
+
+
+@router.patch("/me", response_model=Envelope[UserOut], status_code=status.HTTP_200_OK)
+def update_me(
+    payload: UpdateMeIn,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    repo = SqlAlchemyUserRepository(db)
+    uc = UpdateProfileUseCase(repo)
+    cmd = UpdateProfileCmd(
+        **payload.model_dump(exclude_unset=True), user_id=current_user.id
+    )
+    updated = uc.execute(cmd)
+    db.commit()
+    return Envelope(data=UserOut.from_domain(updated))

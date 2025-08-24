@@ -1,5 +1,5 @@
 import uuid
-from typing import Annotated
+from typing import Annotated, Optional
 
 from pydantic import (
     BaseModel,
@@ -97,3 +97,19 @@ class LoginIn(BaseModel):
 class LoginOut(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+
+class UpdateMeIn(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra={"example": {"name": "Ada L.", "age": 29}},
+    )
+    name: Optional[Name] = None
+    age: Optional[Age] = None
+
+    @field_validator("name", mode="before")
+    @classmethod
+    def _normalize_name(cls, v):
+        if isinstance(v, str):
+            v = " ".join(v.strip().split())
+        return v

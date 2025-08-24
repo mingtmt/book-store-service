@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.domain.entities.user import User
-from app.domain.errors import ConstraintViolation, EmailAlreadyExists
+from app.domain.errors import ConstraintViolation, UserNotFound
 from app.domain.repositories.user_repo import IUserRepository
 from app.infrastructure.db.sqlalchemy.mappers.orm_mapper import (
     apply_domain_to_orm,
@@ -54,6 +54,26 @@ class SqlAlchemyUserRepository(IUserRepository):
             .first()
         )
         return orm_to_domain(m, User) if m else None
+
+    def save(self, user: User) -> User:
+        m = (
+            self.db.execute(select(UserModel).where(UserModel.id == user.id))
+            .scalars()
+            .first()
+        )
+        if not m:
+            raise UserNotFound(context={"user_id": str(user.id)})
+
+        m.name = user.name
+        m.age = user.age
+
+        try:
+            self.db.commit()
+            self.db.refresh(m)
+        except IntegrityError as e:
+            self.db.rollback()
+            raise ConstraintViolation("Resource violates data constraints", cause=e)
+        return orm_to_domain(m, User)
 
     def update(self, user: User) -> User:
         db_user = self.db.query(UserModel).filter(UserModel.id == user.id).first()
