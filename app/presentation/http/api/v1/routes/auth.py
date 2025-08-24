@@ -9,6 +9,7 @@ from app.infrastructure.services.password_service import PasswordService
 from app.presentation.http.dependencies.auth import get_current_user
 from app.presentation.http.dependencies.db import get_db
 from app.presentation.http.schemas.auth import (
+    ChangePasswordIn,
     LoginIn,
     LoginOut,
     RegisterIn,
@@ -17,9 +18,13 @@ from app.presentation.http.schemas.auth import (
     UserOut,
 )
 from app.presentation.http.schemas.base import Envelope
+from app.usecases.auth.change_password import (
+    ChangePasswordCommand,
+    ChangePasswordUseCase,
+)
 from app.usecases.auth.login_user import LoginUserUseCase
 from app.usecases.auth.register_user import RegisterUserCommand, RegisterUserUseCase
-from app.usecases.auth.update_profile import UpdateProfileCmd, UpdateProfileUseCase
+from app.usecases.auth.update_profile import UpdateProfileCommand, UpdateProfileUseCase
 
 router = APIRouter()
 
@@ -70,7 +75,11 @@ def me(current_user=Depends(get_current_user)):
     return Envelope(data=UserOut.from_domain(current_user))
 
 
-@router.patch("/me", response_model=Envelope[UserOut], status_code=status.HTTP_200_OK)
+@router.patch(
+    "/me",
+    response_model=Envelope[UserOut],
+    status_code=status.HTTP_200_OK,
+)
 def update_me(
     payload: UpdateMeIn,
     db: Session = Depends(get_db),
@@ -78,9 +87,25 @@ def update_me(
 ):
     repo = SqlAlchemyUserRepository(db)
     uc = UpdateProfileUseCase(repo)
-    cmd = UpdateProfileCmd(
+    cmd = UpdateProfileCommand(
         **payload.model_dump(exclude_unset=True), user_id=current_user.id
     )
     updated = uc.execute(cmd)
     db.commit()
     return Envelope(data=UserOut.from_domain(updated))
+
+
+@router.put("/change-password", status_code=status.HTTP_204_NO_CONTENT)
+def change_password(
+    payload: ChangePasswordIn,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    password_service = PasswordService()
+    repo = SqlAlchemyUserRepository(db)
+    uc = ChangePasswordUseCase(repo, password_service)
+    cmd = ChangePasswordCommand(
+        **payload.model_dump(exclude_unset=True), id=current_user.id
+    )
+    uc.execute(current_user.id, cmd)
+    return

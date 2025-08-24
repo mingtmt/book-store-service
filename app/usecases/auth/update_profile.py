@@ -8,7 +8,7 @@ from app.domain.repositories.user_repo import IUserRepository
 
 
 @dataclass
-class UpdateProfileCmd:
+class UpdateProfileCommand:
     user_id: uuid.UUID
     name: Optional[str] = None
     age: Optional[int] = None
@@ -18,7 +18,7 @@ class UpdateProfileUseCase:
     def __init__(self, repo: IUserRepository) -> None:
         self.repo = repo
 
-    def execute(self, cmd: UpdateProfileCmd) -> User:
+    def execute(self, cmd: UpdateProfileCommand) -> User:
         user = self.repo.get_by_id(cmd.user_id)
         if not user:
             raise UserNotFound(context={"user_id": str(cmd.user_id)})
