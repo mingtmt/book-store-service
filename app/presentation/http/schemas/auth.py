@@ -113,3 +113,24 @@ class UpdateMeIn(BaseModel):
         if isinstance(v, str):
             v = " ".join(v.strip().split())
         return v
+
+
+class ChangePasswordIn(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra={
+            "example": {
+                "old_password": "OldP@ssw0rd",
+                "new_password": "N3wS3cureP@ssw0rd",
+            }
+        },
+    )
+
+    old_password: Password
+    new_password: Password
+
+    @model_validator(mode="after")
+    def check_different_passwords(self):
+        if self.old_password == self.new_password:
+            raise ValueError("New password must be different from old password")
+        return self

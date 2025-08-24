@@ -64,8 +64,7 @@ class SqlAlchemyUserRepository(IUserRepository):
         if not m:
             raise UserNotFound(context={"user_id": str(user.id)})
 
-        m.name = user.name
-        m.age = user.age
+        apply_domain_to_orm(m, user)
 
         try:
             self.db.commit()
