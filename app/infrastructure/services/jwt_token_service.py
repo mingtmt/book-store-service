@@ -4,6 +4,7 @@ from typing import Any, Dict, Optional
 
 from jose import ExpiredSignatureError, JWTError, jwt
 
+from app.domain.errors import AccessTokenExpired, AccessTokenInvalid
 from app.ports.token_service import ITokenService
 from app.settings.config import settings
 
@@ -49,6 +50,6 @@ class JWTTokenService(ITokenService):
                 issuer=self.issuer if self.issuer else None,
             )
         except ExpiredSignatureError as e:
-            raise ValueError("token_expired") from e
+            raise AccessTokenExpired() from e
         except JWTError as e:
-            raise ValueError("invalid_token") from e
+            raise AccessTokenInvalid() from e

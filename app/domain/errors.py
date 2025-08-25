@@ -84,6 +84,21 @@ class InvalidCredentials(AuthError):
     default_message = "Invalid email or password"
 
 
+class AccessTokenMissing(AuthError):
+    code = "ACCESS_TOKEN_ERROR"
+    default_message = "Access token is missing"
+
+
+class AccessTokenInvalid(AuthError):
+    code = "ACCESS_TOKEN_ERROR"
+    default_message = "Access token is invalid"
+
+
+class AccessTokenExpired(AuthError):
+    code = "ACCESS_TOKEN_ERROR"
+    default_message = "Access token is expired"
+
+
 class InvalidEmail(ValidationError):
     code = "INVALID_EMAIL"
     default_message = "Email format is invalid"
