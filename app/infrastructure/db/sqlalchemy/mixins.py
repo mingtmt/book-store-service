@@ -36,7 +36,7 @@ class OptimisticLockMixin:
     def __mapper_args__(cls):
         return {
             "version_id_col": cls.version,
-            "version_id_generator": True,
+            "version_id_generator": lambda v: (v or 0) + 1,
         }
 
 

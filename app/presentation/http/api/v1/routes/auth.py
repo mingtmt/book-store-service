@@ -6,7 +6,7 @@ from app.infrastructure.db.sqlalchemy.repositories.user_impl import (
 )
 from app.infrastructure.services.jwt_token_service import JWTTokenService
 from app.infrastructure.services.password_service import PasswordService
-from app.presentation.http.dependencies.auth import get_current_user
+from app.presentation.http.dependencies.auth import get_current_user, require_auth
 from app.presentation.http.dependencies.db import get_db
 from app.presentation.http.schemas.auth import (
     ChangePasswordIn,
@@ -70,6 +70,7 @@ def login(payload: LoginIn, db: Session = Depends(get_db)):
     "/me",
     response_model=Envelope[UserOut],
     status_code=status.HTTP_200_OK,
+    dependencies=[Depends(require_auth)],
 )
 def me(current_user=Depends(get_current_user)):
     return Envelope(data=UserOut.from_domain(current_user))
@@ -79,6 +80,7 @@ def me(current_user=Depends(get_current_user)):
     "/me",
     response_model=Envelope[UserOut],
     status_code=status.HTTP_200_OK,
+    dependencies=[Depends(require_auth)],
 )
 def update_me(
     payload: UpdateMeIn,
@@ -95,7 +97,11 @@ def update_me(
     return Envelope(data=UserOut.from_domain(updated))
 
 
-@router.put("/change-password", status_code=status.HTTP_204_NO_CONTENT)
+@router.put(
+    "/change-password",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_auth)],
+)
 def change_password(
     payload: ChangePasswordIn,
     db: Session = Depends(get_db),

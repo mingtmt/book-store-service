@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.infrastructure.db.sqlalchemy.repositories.book_impl import (
     SqlAlchemyBookRepository,
 )
+from app.presentation.http.dependencies.auth import require_auth
 from app.presentation.http.dependencies.db import get_db
 from app.presentation.http.schemas.base import Envelope
 from app.presentation.http.schemas.books import BookOut, CreateBook, UpdateBook
@@ -21,6 +22,7 @@ router = APIRouter()
     "/",
     response_model=Envelope[BookOut],
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_auth)],
 )
 def create(payload: CreateBook, response: Response, db: Session = Depends(get_db)):
     repo = SqlAlchemyBookRepository(db)
@@ -65,6 +67,7 @@ def get_all(db: Session = Depends(get_db)):
     "/{book_id}",
     response_model=Envelope[BookOut],
     status_code=status.HTTP_200_OK,
+    dependencies=[Depends(require_auth)],
 )
 def update(book_id: uuid.UUID, payload: UpdateBook, db: Session = Depends(get_db)):
     repo = SqlAlchemyBookRepository(db)
@@ -77,6 +80,7 @@ def update(book_id: uuid.UUID, payload: UpdateBook, db: Session = Depends(get_db
 @router.delete(
     "/{book_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_auth)],
 )
 def delete(book_id: uuid.UUID, db: Session = Depends(get_db)):
     repo = SqlAlchemyBookRepository(db)

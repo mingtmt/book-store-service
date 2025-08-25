@@ -7,6 +7,9 @@ from pydantic import ValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.domain.errors import (
+    AccessTokenExpired,
+    AccessTokenInvalid,
+    AccessTokenMissing,
     BookNotFound,
     ConstraintViolation,
     EmailAlreadyExists,
@@ -27,6 +30,9 @@ DOMAIN_HTTP_MAP: dict[type[Exception], tuple[int, str]] = {
     InvalidEmail: (400, "INVALID_EMAIL"),
     PasswordTooWeak: (400, "PASSWORD_TOO_WEAK"),
     InvalidCredentials: (401, "INVALID_CREDENTIALS"),
+    AccessTokenMissing: (401, "ACCESS_TOKEN_MISSING"),
+    AccessTokenInvalid: (401, "ACCESS_TOKEN_INVALID"),
+    AccessTokenExpired: (401, "ACCESS_TOKEN_EXPIRED"),
 }
 USECASE_HTTP_MAP: dict[type[Exception], tuple[int, str]] = {
     NotFound: (404, "NOT_FOUND"),
