@@ -69,6 +69,11 @@ class BookNotFound(NotFoundError):
     default_message = "Book not found"
 
 
+class RoleNotFound(NotFoundError):
+    code = "ROLE_NOT_FOUND"
+    default_message = "Role not found"
+
+
 class EmailAlreadyExists(ConflictError):
     code = "EMAIL_ALREADY_EXISTS"
     default_message = "Email already exists"
